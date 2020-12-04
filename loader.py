@@ -60,10 +60,14 @@ class DataGenerator:
 
         author_key = self.keys.author(author_id)
         if new_author:
-            self.commands += [AUTHOR_HMSET_COMMAND.format(key=author_key, author_id=author_id, name=author)]
+            self.commands += [
+                AUTHOR_HMSET_COMMAND.format(key=author_key, author_id=author_id, name=author)
+            ]
 
         author_books_key = self.keys.author_books(author_id)
-        self.commands += [AUTHORS_BOOKS_SADD_COMMAND.format(key=author_books_key, book_isbn13=book['isbn13'])]
+        self.commands += [
+            AUTHORS_BOOKS_SADD_COMMAND.format(key=author_books_key, book_isbn13=book['isbn13'])
+        ]
 
     def add_category(self, book, category):
         category_id = self.categories.get(category)
@@ -76,10 +80,16 @@ class DataGenerator:
 
         category_key = self.keys.category(category_id)
         if new_category:
-            self.commands += [CATEGORY_HMSET_COMMAND.format(key=category_key, category_id=category_id, name=category)]
+            self.commands += [
+                CATEGORY_HMSET_COMMAND.format(key=category_key,
+                                              category_id=category_id,
+                                              name=category)
+            ]
 
         category_books_key = self.keys.category_books(category_id)
-        self.commands += [CATEGORIES_BOOKS_SADD_COMMAND.format(key=category_books_key, book_isbn13=book['isbn13'])]
+        self.commands += [
+            CATEGORIES_BOOKS_SADD_COMMAND.format(key=category_books_key, book_isbn13=book['isbn13'])
+        ]
 
     def add_book(self, book):
         book_key = self.keys.book(book['isbn13'])
@@ -88,8 +98,13 @@ class DataGenerator:
         subtitle = book.pop('subtitle').replace('"', '\\"').replace("'", "\\'")
         book_authors = book.pop('authors').replace('"', '\\"').replace("'", "\\'").split(';')
         book_categories = book.pop('categories').replace('"', '\\"').replace("'", "\\'").split(';')
-        self.commands += [BOOK_HMSET_COMMAND.format(key=book_key, title=title, description=description,
-                                                    subtitle=subtitle, **book)]
+        self.commands += [
+            BOOK_HMSET_COMMAND.format(key=book_key,
+                                      title=title,
+                                      description=description,
+                                      subtitle=subtitle,
+                                      **book)
+        ]
         self.book_isbn13s += [book['isbn13']]
 
         # Add authors and establish book -> author relationship
@@ -112,20 +127,31 @@ class DataGenerator:
             book_isbn13 = random.choice(self.book_isbn13s)
             key = self.keys.checkout(user_id, book_isbn13)
             checkout_date = date.today() - timedelta(days=35)
-            self.commands += [CHECKOUT_HMSET_COMMAND.format(key=key, user_id=user_id, book_isbn13=book_isbn13,
-                                                            return_date="\"\"",
-                                                            checkout_date=datetime.combine(checkout_date, datetime.min.time()).timestamp(),
-                                                            checkout_length_days=checkout_length_days)]
+            self.commands += [
+                CHECKOUT_HMSET_COMMAND.format(key=key,
+                                              user_id=user_id,
+                                              book_isbn13=book_isbn13,
+                                              return_date="\"\"",
+                                              checkout_date=datetime.combine(
+                                                  checkout_date, datetime.min.time()).timestamp(),
+                                              checkout_length_days=checkout_length_days)
+            ]
 
         # On-time checkouts
         for user_id in range(12, len(self.users) - 1):
             book_isbn13 = random.choice(self.book_isbn13s)
             key = self.keys.checkout(user_id, book_isbn13)
             checkout_date = date.today() - timedelta(days=14)
-            self.commands += [CHECKOUT_HMSET_COMMAND.format(key=key, user_id=user_id, book_isbn13=book_isbn13,
-                                                            return_date="\"\"",
-                                                            checkout_date=datetime.combine(checkout_date, datetime.min.tgtgtime()).timestamp(),
-                                                            checkout_length_days=checkout_length_days)]
+            self.commands += [
+                CHECKOUT_HMSET_COMMAND.format(key=key,
+                                              user_id=user_id,
+                                              book_isbn13=book_isbn13,
+                                              return_date="\"\"",
+                                              checkout_date=datetime.combine(
+                                                  checkout_date,
+                                                  datetime.min.tgtgtime()).timestamp(),
+                                              checkout_length_days=checkout_length_days)
+            ]
 
     def write_commands(self):
         with open('commands.redis', 'w') as f:
