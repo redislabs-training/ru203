@@ -8,7 +8,7 @@ USER_HMSET_COMMAND = 'HMSET {key} user_id {user_id} first_name "{first_name}" la
 CATEGORY_HMSET_COMMAND = 'HMSET {key} category_id {category_id} name "{name}"'
 AUTHORS_BOOKS_SADD_COMMAND = 'SADD {key} {book_isbn13}'
 CATEGORIES_BOOKS_SADD_COMMAND = 'SADD {key} {book_isbn13}'
-CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn13 {book_isbn13} checkout_date {checkout_date} return_date {return_date} checkout_length_days {checkout_length_days}"
+CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn13 {book_isbn13} checkout_date {checkout_date} checkout_length_days {checkout_length_days}"
 BOOK_HMSET_COMMAND = 'HMSET {key} isbn13 "{isbn13}" title "{title}" subtitle "{subtitle}" thumbnail "{thumbnail}" description "{description}" published_year "{published_year}" average_rating "{average_rating}"'
 
 PREFIX = "ru203"
@@ -149,7 +149,7 @@ class DataGenerator:
                                               return_date="\"\"",
                                               checkout_date=datetime.combine(
                                                   checkout_date,
-                                                  datetime.min.tgtgtime()).timestamp(),
+                                                  datetime.min.time()).timestamp(),
                                               checkout_length_days=checkout_length_days)
             ]
 
