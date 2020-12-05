@@ -3,15 +3,17 @@ import os
 import random
 from datetime import date, datetime, timedelta
 
-AUTHOR_HMSET_COMMAND = 'HMSET {key} author_id {author_id} name "{name}"'
-USER_HMSET_COMMAND = 'HMSET {key} user_id {user_id} first_name "{first_name}" last_name "{last_name}" email "{email}"'
-CATEGORY_HMSET_COMMAND = 'HMSET {key} category_id {category_id} name "{name}"'
-AUTHORS_BOOKS_SADD_COMMAND = 'SADD {key} {book_isbn13}'
-CATEGORIES_BOOKS_SADD_COMMAND = 'SADD {key} {book_isbn13}'
+AUTHOR_HMSET_COMMAND = 'HMSET {key} name "{name}"'
+USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}"'
 CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn13 {book_isbn13} checkout_date {checkout_date} checkout_length_days {checkout_length_days}"
-BOOK_HMSET_COMMAND = 'HMSET {key} isbn13 "{isbn13}" title "{title}" subtitle "{subtitle}" thumbnail "{thumbnail}" description "{description}" published_year "{published_year}" average_rating "{average_rating}"'
+BOOK_HMSET_COMMAND = 'HMSET {key} isbn13 "{isbn13}" title "{title}" subtitle "{subtitle}" thumbnail "{thumbnail}" description "{description}" categories "{categories}" authors "{authors}" author_ids "{author_ids}"'
+AUTHORS_BOOKS_HMSET_COMMAND = 'HMSET {key} book_isbn13 {book_isbn13} author_id {author_id}'
 
 PREFIX = "ru203"
+
+
+def escape_quotes(string):
+    return string.replace('"', '\\"').replace("'", "\\'")
 
 
 class Keys:
@@ -19,19 +21,13 @@ class Keys:
         self.prefix = prefix
 
     def book(self, book_isbn13):
-        return f"ru203:book:details:{book_isbn13}"
+        return f"{self.prefix}:book:details:{book_isbn13}"
 
     def author(self, author_id):
         return f"{self.prefix}:author:details:{author_id}"
 
-    def author_books(self, author_id):
-        return f"{self.prefix}:author:books:{author_id}"
-
-    def category(self, category_id):
-        return f"{self.prefix}:category:details:{category_id}"
-
-    def category_books(self, category_id):
-        return f"{self.prefix}:category:books:{category_id}"
+    def author_books(self, author_id, book_isbn13):
+        return f"{self.prefix}:author:books:{author_id}-{book_isbn13}"
 
     def user(self, user_id):
         return f"{self.prefix}:user:details:{user_id}"
@@ -64,56 +60,40 @@ class DataGenerator:
                 AUTHOR_HMSET_COMMAND.format(key=author_key, author_id=author_id, name=author)
             ]
 
-        author_books_key = self.keys.author_books(author_id)
+        author_books_key = self.keys.author_books(author_id, book['isbn13'])
         self.commands += [
-            AUTHORS_BOOKS_SADD_COMMAND.format(key=author_books_key, book_isbn13=book['isbn13'])
+            AUTHORS_BOOKS_HMSET_COMMAND.format(key=author_books_key, author_id=author_id, book_isbn13=book['isbn13'])
         ]
 
-    def add_category(self, book, category):
-        category_id = self.categories.get(category)
-        new_category = False
-
-        if not category_id:
-            new_category = True
-            category_id = len(self.categories) + 1
-            self.categories[category] = category_id
-
-        category_key = self.keys.category(category_id)
-        if new_category:
-            self.commands += [
-                CATEGORY_HMSET_COMMAND.format(key=category_key,
-                                              category_id=category_id,
-                                              name=category)
-            ]
-
-        category_books_key = self.keys.category_books(category_id)
-        self.commands += [
-            CATEGORIES_BOOKS_SADD_COMMAND.format(key=category_books_key, book_isbn13=book['isbn13'])
-        ]
+        return author_id
 
     def add_book(self, book):
         book_key = self.keys.book(book['isbn13'])
-        title = book.pop('title').replace('"', '\\"').replace("'", "\\'")
-        description = book.pop('description').replace('"', '\\"').replace("'", "\\'")
-        subtitle = book.pop('subtitle').replace('"', '\\"').replace("'", "\\'")
-        book_authors = book.pop('authors').replace('"', '\\"').replace("'", "\\'").split(';')
-        book_categories = book.pop('categories').replace('"', '\\"').replace("'", "\\'").split(';')
-        self.commands += [
-            BOOK_HMSET_COMMAND.format(key=book_key,
-                                      title=title,
-                                      description=description,
-                                      subtitle=subtitle,
-                                      **book)
-        ]
-        self.book_isbn13s += [book['isbn13']]
+        title = escape_quotes(book.pop('title'))
+        description = escape_quotes(book.pop('description'))
+        subtitle = escape_quotes(book.pop('subtitle'))
+        book_authors = escape_quotes(book.get('authors')).split(';')
+        command = BOOK_HMSET_COMMAND
 
         # Add authors and establish book -> author relationship
-        for author in book_authors:
-            self.add_author(book, author)
+        author_ids = ';'.join([str(self.add_author(book, author)) for author in book_authors])
 
-        # Add categories and establish book -> category relationships
-        for category in book_categories:
-            self.add_category(book, category)
+        # Fields with null values (empty strings) should not appear in hashes
+        # we will index with RediSearch.
+        if book['published_year']:
+            command += ' published_year "{published_year}"'
+        if book['average_rating']:
+            command += ' average_rating "{average_rating}"'
+
+        self.commands += [
+            command.format(key=book_key,
+                           title=title,
+                           description=description,
+                           subtitle=subtitle,
+                           author_ids=author_ids,
+                           **book)
+        ]
+        self.book_isbn13s += [book['isbn13']]
 
     def add_user(self, user_id, user):
         user_key = self.keys.user(user_id)
@@ -148,8 +128,7 @@ class DataGenerator:
                                               book_isbn13=book_isbn13,
                                               return_date="\"\"",
                                               checkout_date=datetime.combine(
-                                                  checkout_date,
-                                                  datetime.min.time()).timestamp(),
+                                                  checkout_date, datetime.min.time()).timestamp(),
                                               checkout_length_days=checkout_length_days)
             ]
 
