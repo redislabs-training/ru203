@@ -36,7 +36,7 @@ If you wanted to make an index of a partial set of Hashes, like a partial index 
 
     FT.CREATE sherlock-checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: FILTER "@book_isbn13==9780553212419"  SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn13 TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE
 
-## Queries
+## Querying
 
 ### Exact matches in a field
 
@@ -101,3 +101,11 @@ TODO. Update data model. Location of checkout.
     
     FT.SEARCH books-idx "@published_year:[2018 +inf]" SORTBY published_year DESC
     
+## Full-text search
+
+TODO
+
+## Aggregations
+
+TODO
+
