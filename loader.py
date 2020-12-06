@@ -72,11 +72,12 @@ class DataGenerator:
         title = escape_quotes(book.pop('title'))
         description = escape_quotes(book.pop('description'))
         subtitle = escape_quotes(book.pop('subtitle'))
-        book_authors = escape_quotes(book.get('authors')).split(';')
+        book_authors = escape_quotes(book.pop('authors'))
         command = BOOK_HMSET_COMMAND
 
         # Add authors and establish book -> author relationship
-        author_ids = ';'.join([str(self.add_author(book, author)) for author in book_authors])
+        author_ids = ';'.join(
+            [str(self.add_author(book, author)) for author in book_authors.split(";")])
 
         # Fields with null values (empty strings) should not appear in hashes
         # we will index with RediSearch.
@@ -91,6 +92,7 @@ class DataGenerator:
                            description=description,
                            subtitle=subtitle,
                            author_ids=author_ids,
+                           authors=book_authors,
                            **book)
         ]
         self.book_isbn13s += [book['isbn13']]
@@ -101,12 +103,13 @@ class DataGenerator:
         self.users[user_id] = user
 
     def generate_checkout_data(self):
+        TODAY = datetime.date(year=2021, month=1, day=1)
         # Late checkouts
         checkout_length_days = 30
         for user_id in range(0, 12):
             book_isbn13 = random.choice(self.book_isbn13s)
             key = self.keys.checkout(user_id, book_isbn13)
-            checkout_date = date.today() - timedelta(days=35)
+            checkout_date = TODAY - timedelta(days=35)
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
                                               user_id=user_id,
@@ -121,7 +124,7 @@ class DataGenerator:
         for user_id in range(12, len(self.users) - 1):
             book_isbn13 = random.choice(self.book_isbn13s)
             key = self.keys.checkout(user_id, book_isbn13)
-            checkout_date = date.today() - timedelta(days=14)
+            checkout_date = TODAY - timedelta(days=14)
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
                                               user_id=user_id,
