@@ -107,11 +107,37 @@ Like partial indexes in a relational database, you can use the `FILTER` option t
 
 ## Querying
 
-### Exact matches in a field
+### Querying versus searching
+
+For the purposes of this course, the difference between querying and searching is that querying often involves known values. That is, you might want to query for a specific date, an ID, or a range of numbers.
+
+When you search, on the other hand, you may not know the exact value you want to find. Full-text search therefore includes techniques like prefix matching (finding strings that start with given string) and fuzzy-matching.
+
+This section will talk about querying, and later in this document you can find examples of full-text searches.
+
+### Exact text matches
 
 Run the following query to find books with a specific ISBN:
 
     FT.SEARCH checkouts-idx "@book_isbn13:9780393059168"
+
+The books-idx indexes the `book_isbn13` field as `TEXT NOSTEM`, so the ISBN in this
+query is treated as a text value. `NOSTEM` tells RediSearch that we don't need to
+index terms for this field using "stemming," which is an approach that helps with
+full-text search, but not with exact-phrase matches.
+
+If the values in a field will contain punctuation and you want to be able to search
+for exact matches using that punctuation (e.g., email addresses), you'll need to
+escape any punctuation in the values when you index. And then when you query,
+you also need to escape punctuation.
+
+As an example, if the users-idx index stored email addresses as TEXT NOTEM fields instead of TAG fields, a query for a specific addres might look like this:
+
+    FT.SEARCH users-idx "@email:k\\.brown\\@example\\.com"
+
+Note that when we added the Redis Hash containing this email address, we would have
+needed to escape any punctuation in the string -- in addition to escaping them in
+our query, as the example query does.
 
 ### Boolean logic
 
@@ -197,13 +223,11 @@ Tags accept the OR operator -- Tolkien or J. K. Rowling
 
 NOTE: When tags contain spaces or punctuation, you need to escape them. If we had a tag for "j. r. r. tolkien" instead of author ID, to query it you would need to write "@authors:{j\\. r\\. r\\. tolkien" (we don't have such a tag).
 
-Tags are also useful for doing exact-matches on fields whose values may contain
-symbols that collide with RediSearch's syntax, like email addresses. RediSearch
-uses the `@` symbol. If you store email addresses in a tag field, as the users-idx
-index does, then you can search for exact email addresses by escaping the punctuation
-in the address:
+Tag fields are also useful for doing exact-matches on fields when you only ever want to make exact-matches. In other words, you don't need RediSearch to tokenize the values. For example, if you store email addresses in a tag field, as the users-idx index does, then you can search for exact email addresses like so:
 
     FT.SEARCH users-idx "@email:{k\\.brown\\@example\\.com}"
+
+Notice that you have to escape all punctuation in the email address.
 
 ## Aggregations
 
