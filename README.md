@@ -136,7 +136,10 @@ As an example, if the `users-idx` index stored email addresses as TEXT NOSTEM fi
     FT.SEARCH users-idx "@email:k\\.brown\\@example\\.com"
 
 Note that when we added the Redis Hash containing this email address, we would have
-needed to escape any punctuation in the string -- in addition to escaping punctuation in this query.
+needed to escape any punctuation in the string -- in addition to escaping punctuation
+in this query. The punctuation you'd need to escape is:
+
+    ,.<>{}[]"':;!@#$%^&*()-+=~
 
 ### Boolean logic
 
@@ -214,7 +217,7 @@ Thus the HMSET command for one of these checkout hashes should look like this:
 
 Finding all books by a specific author, when author ID is stored as a tag -- 34 is J. R. R. Tolkien:
 
-    FT.SEARCH books-idx "@author_ids:{34 }"
+    FT.SEARCH books-idx "@author_ids:{34}"
 
 Tags accept the OR operator -- Tolkien or J. K. Rowling
 
@@ -226,7 +229,10 @@ Tag fields are also useful for doing exact-matches on fields when you only ever 
 
     FT.SEARCH users-idx "@email:{k\\.brown\\@example\\.com}"
 
-Notice that you have to escape all punctuation in the email address.
+Notice that you have to escape any punctuation in the query. As a general rule,
+always escape the following punctuation in queries:
+
+    ,.<>{}[]"':;!@#$%^&*()-+=~
 
 ## Aggregations
 
