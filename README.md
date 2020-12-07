@@ -93,7 +93,7 @@ Then run the following commands, one at a time:
 
     FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn13 TEXT NOSTEM SORTABLE title TEXT WEIGHT 2.0 SORTABLE subtitle TEXT SORTABLE thumbnail TEXT NOSTEM NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
 
-    FT.CREATE users-idx ON HASH PREFIX 1 ru203:user:details: SCHEMA first_name TEXT SORTABLE last_name TEXT SORTABLE email TEXT NOSTEM SORTABLE
+    FT.CREATE users-idx ON HASH PREFIX 1 ru203:user:details: SCHEMA first_name TEXT SORTABLE last_name TEXT SORTABLE email TAG SORTABLE
 
     FT.CREATE authors-idx ON HASH PREFIX 1 ru203:author:details: SCHEMA name TEXT SORTABLE
 
@@ -116,12 +116,15 @@ Run the following query to find books with a specific ISBN:
 ### Boolean logic
 
 AND is implied by multiple fields:
+
     FT.SEARCH books-idx "@authors:rowling @title:goblet"
 
 OR:
+
     FT.SEARCH books-idx "@authors:rowling | @authors:tolkien"
 
 NOT:
+
     FT.SEARCH books-idx "@authors:tolkien' -@title:silmarillion"
 
 ### Numbers and numeric ranges
@@ -193,6 +196,14 @@ Tags accept the OR operator -- Tolkien or J. K. Rowling
     FT.SEARCH books-idx "@author_ids:{34 | 1811}"
 
 NOTE: When tags contain spaces or punctuation, you need to escape them. If we had a tag for "j. r. r. tolkien" instead of author ID, to query it you would need to write "@authors:{j\\. r\\. r\\. tolkien" (we don't have such a tag).
+
+Tags are also useful for doing exact-matches on fields whose values may contain
+symbols that collide with RediSearch's syntax, like email addresses. RediSearch
+uses the `@` symbol. If you store email addresses in a tag field, as the users-idx
+index does, then you can search for exact email addresses by escaping the punctuation
+in the address:
+
+    FT.SEARCH users-idx "@email:{k\\.brown\\@example\\.com}"
 
 ## Aggregations
 
