@@ -15,8 +15,8 @@ You can run Redis with RediSearch for free with a Redis Cloud Essentials account
 https://redislabs.com/try-free/
 
 You can also install Redis with RediSearch using Docker or by building from source.
-For detailed instructions on how to do so, visit the module's
-[documentation site](https://oss.redislabs.com/redisearch/).
+For detailed instructions on how to do so, visit the
+[RediSearch documentation](https://oss.redislabs.com/redisearch/).
 
 ## The Data Model
 
