@@ -131,13 +131,12 @@ for exact matches using that punctuation (e.g., email addresses), you'll need to
 escape any punctuation in the values when you index. And then when you query,
 you also need to escape punctuation.
 
-As an example, if the users-idx index stored email addresses as TEXT NOTEM fields instead of TAG fields, a query for a specific addres might look like this:
+As an example, if the `users-idx` index stored email addresses as TEXT NOSTEM fields instead of TAG fields, a query for a specific address might look like this:
 
     FT.SEARCH users-idx "@email:k\\.brown\\@example\\.com"
 
 Note that when we added the Redis Hash containing this email address, we would have
-needed to escape any punctuation in the string -- in addition to escaping them in
-our query, as the example query does.
+needed to escape any punctuation in the string -- in addition to escaping punctuation in this query.
 
 ### Boolean logic
 
