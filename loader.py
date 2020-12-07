@@ -5,11 +5,14 @@ from datetime import date, datetime, timedelta
 
 AUTHOR_HMSET_COMMAND = 'HMSET {key} name "{name}"'
 USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}"'
-CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn13 {book_isbn13} checkout_date {checkout_date} checkout_length_days {checkout_length_days}"
+CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn13 {book_isbn13} checkout_date {checkout_date} checkout_length_days {checkout_length_days} geopoint {geopoint}"
 BOOK_HMSET_COMMAND = 'HMSET {key} isbn13 "{isbn13}" title "{title}" subtitle "{subtitle}" thumbnail "{thumbnail}" description "{description}" categories "{categories}" authors "{authors}" author_ids "{author_ids}"'
 AUTHORS_BOOKS_HMSET_COMMAND = 'HMSET {key} book_isbn13 {book_isbn13} author_id {author_id}'
 
 PREFIX = "ru203"
+
+SEATTLE = "-122.335167,47.608013"
+NEW_YORK = "-73.935242,40.730610"
 
 
 def escape_quotes(string):
@@ -103,15 +106,16 @@ class DataGenerator:
         self.users[user_id] = user
 
     def generate_checkout_data(self):
-        TODAY = datetime.date(year=2021, month=1, day=1)
+        TODAY = date(year=2021, month=1, day=1)
         # Late checkouts
         checkout_length_days = 30
         for user_id in range(0, 12):
-            book_isbn13 = random.choice(self.book_isbn13s)
+            book_isbn13 = "9780393059168"  # Sherlock Holmes
             key = self.keys.checkout(user_id, book_isbn13)
             checkout_date = TODAY - timedelta(days=35)
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
+                                              geopoint=SEATTLE,
                                               user_id=user_id,
                                               book_isbn13=book_isbn13,
                                               return_date="\"\"",
@@ -127,6 +131,7 @@ class DataGenerator:
             checkout_date = TODAY - timedelta(days=14)
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
+                                              geopoint=NEW_YORK,
                                               user_id=user_id,
                                               book_isbn13=book_isbn13,
                                               return_date="\"\"",

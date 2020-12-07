@@ -19,6 +19,8 @@ We're going to give you all the commands you need to create these indexes, but
 before you run them, make sure you're in the redis CLI:
 
     $ redis-cli
+    
+Then run the following commands, one at a time:
 
     FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn13 TEXT NOSTEM SORTABLE title TEXT WEIGHT 2.0 SORTABLE subtitle TEXT SORTABLE thumbnail TEXT NOSTEM NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
 
@@ -28,13 +30,11 @@ before you run them, make sure you're in the redis CLI:
 
     FT.CREATE authors-books-idx ON HASH PREFIX 1 ru203:author:books: SCHEMA book_isbn13 TEXT NOSTEM SORTABLE author_id TEXT NOSTEM SORTABLE
 
-    FT.CREATE checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn13 TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE
-
-<!-- TODO: This doesn't work. Why not? I asked in #redisearch. -->
+    FT.CREATE checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn13 TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
 
 If you wanted to make an index of a partial set of Hashes, like a partial index in a relational database, you can use the `FILTER` option to `FT.CREATE`. Here we'll use that option to create an index on checkouts of books of a specific book:
 
-    FT.CREATE sherlock-checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: FILTER "@book_isbn13==9780553212419"  SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn13 TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE
+    FT.CREATE sherlock-checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: FILTER "@book_isbn13=='9780393059168'" SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn13 TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
 
 ## Querying
 
@@ -42,7 +42,7 @@ If you wanted to make an index of a partial set of Hashes, like a partial index 
 
 Run the following query to find books with a specific ISBN:
 
-    FT.SEARCH checkouts-idx "@book_isbn13:9780192840509"
+    FT.SEARCH checkouts-idx "@book_isbn13:9780393059168"
 
 ### Boolean logic
 
@@ -93,7 +93,19 @@ To find a specific date, you have to pass the same timestamp in as both the lowe
 
 ### Geo radius
 
-TODO. Update data model. Location of checkout.
+Checkouts in New York:
+
+    FT.SEARCH checkouts-idx "@geopoint:[-73.935242 40.730610 1 mi]" 
+
+Checkouts in Seattle:
+
+    FT.SEARCH checkouts-idx "@geopoint:[-122.335167 47.608013 1 mi]"
+    
+Note that when storing coordinates in a Hash, and when querying, the coordinates should appear in longitude, latitude order.
+
+Thus the HMSET command for one of these checkout hashes should look like this:
+
+    HMSET ru203:book:checkout:48-9780007130313 user_id 48 book_isbn13 9780007130313 checkout_date 1608278400.0 checkout_length_days 30 geopoint -73.935242,40.730610
 
 ### Sorting results
 
@@ -101,11 +113,54 @@ TODO. Update data model. Location of checkout.
     
     FT.SEARCH books-idx "@published_year:[2018 +inf]" SORTBY published_year DESC
     
-## Full-text search
+    
+### Tags
 
-TODO
+Finding all books by a specific author, when author ID is stored as a tag -- 34 is J. R. R. Tolkien:
 
+    FT.SEARCH books-idx "@author_ids:{34 }"
+
+Tags accept the OR operator -- Tolkien or J. K. Rowling
+    
+    FT.SEARCH books-idx "@author_ids:{34 | 1811}"
+    
+NOTE: When tags contain spaces or punctuation, you need to escape them. If we had a tag for "j. r. r. tolkien" instead of author ID, to query it you would need to write "@authors:{j\\. r\\. r\\. tolkien" (we don't have such a tag).
+    
 ## Aggregations
 
-TODO
+Find the number of books authored or co-authored by J. K. Rowling:
 
+    FT.AGGREGATE books-idx * APPLY "split(@authors, ';')" AS authors GROUPBY 1 "@authors" REDUCE COUNT 1 "@authors" FILTER "@authors=='rowling, j.k.' || @authors=='j. k. rowling'"
+  
+Count the number of books with the title "Harry Potter":
+
+Count the number of book that referenced "Harry Potter" grouped by publication year:
+
+    FT.AGGREGATE books-idx "Harry Potter" GROUPBY 1 "@published_year" REDUCE COUNT 1 "@authors"
+  
+  
+## Full-text search
+
+Prefix-matching query:
+
+    FT.SEARCH books-idx "pott*"
+    
+Fuzzy-matching (Levenshtein distance) query:
+
+    FT.SEARCH books-idx "%pott%"
+
+Wildcard queries -- all docsuments in the index: 
+
+    FT.SEARCH books-idx *
+    
+Adjusting the score of a single clause in the query -- this should return _Harry Potter and the Goblet of Fire_ as the first result:
+
+    FT.SEARCH books-idx "potter" (goblet) => { $weight: 10.0}
+
+Getting highlights:
+
+    FT.SEARCH books-idx "%pott%" HIGHLIGHT FIELDS 3 description title subtitle
+    
+Summarizing fields:
+
+    FT.SEARCH books-idx agamemnon SUMMARIZE FIELDS 1 description FRAGS 3 LEN 25
