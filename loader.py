@@ -3,8 +3,8 @@ import os
 import random
 from datetime import date, datetime, timedelta
 
-AUTHOR_HMSET_COMMAND = 'HMSET {key} name "{name}"'
-USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}"'
+AUTHOR_HMSET_COMMAND = 'HMSET {key} name "{name}" author_id "{author_id}"'
+USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}" user_id "{user_id}"'
 CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn13 {book_isbn13} checkout_date {checkout_date} checkout_length_days {checkout_length_days} geopoint {geopoint}"
 BOOK_HMSET_COMMAND = 'HMSET {key} isbn13 "{isbn13}" title "{title}" subtitle "{subtitle}" thumbnail "{thumbnail}" description "{description}" categories "{categories}" authors "{authors}" author_ids "{author_ids}"'
 AUTHORS_BOOKS_HMSET_COMMAND = 'HMSET {key} book_isbn13 {book_isbn13} author_id {author_id}'
