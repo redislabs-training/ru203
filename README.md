@@ -1,6 +1,6 @@
-# ru203-redisearch
+# RU203: Querying, Indexing, and Full-Text Search
 
-Example code for the Redis University course RU203.
+Example code for the Redis University course [RU203: Querying, Indexing, and Full-Text Search](https://university.redislabs.com/courses/ru203/).
 
 ## Introduction
 
@@ -21,7 +21,7 @@ For detailed instructions on how to do so, visit the
 ## The Data Model
 
 The queries in this repository work on a set of Redis Hashes that describe
-books, authors, library checkouts, and users. The hashes look like the
+books, authors, library checkouts, and users. The Hashes look like the
 following diagram.
 
 ```
@@ -131,7 +131,7 @@ for exact matches using that punctuation (e.g., email addresses), you'll need to
 escape any punctuation in the values when you index. And then when you query,
 you also need to escape punctuation.
 
-As an example, if the `users-idx` index stored email addresses as TEXT NOSTEM fields instead of TAG fields, a query for a specific address might look like this:
+As an example, if the `users-idx` index stored email addresses as `TEXT NOSTEM` fields instead of `TAG` fields, a query for a specific address might look like this:
 
     FT.SEARCH users-idx "@email:k\\.brown\\@example\\.com"
 
@@ -157,9 +157,9 @@ NOT:
 
 ### Numbers and numeric ranges
 
-NUMERIC values are only really useful if you plan on doing number range queries. If you don't, index the value as TEXT NOSTEM, and you'll be able to do exact-phrase queries to find specific values.
+`NUMERIC` values are only really useful if you plan on doing number range queries. If you don't, index the value as `TEXT NOSTEM`, and you'll be able to do exact-phrase queries to find specific values.
 
-If you index as NUMERIC and want to find a specific value, you need to use the range syntax, specifying that value as the lower and upper range. For example, all books published in 1955:
+If you index as `NUMERIC` and want to find a specific value, you need to use the range syntax, specifying that value as the lower and upper range. For example, all books published in 1955:
 
     FT.SEARCH books-idx "@published_year:[1955 1955]"
 
@@ -242,7 +242,9 @@ Find the number of books authored or co-authored by J. K. Rowling:
 
 Count the number of books with the title "Harry Potter":
 
-Count the number of book that referenced "Harry Potter" grouped by publication year:
+    TODO
+
+Count the number of books that referenced "Harry Potter" grouped by publication year:
 
     FT.AGGREGATE books-idx "Harry Potter" GROUPBY 1 "@published_year" REDUCE COUNT 1 "@authors"
 
