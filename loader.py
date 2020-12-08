@@ -2,7 +2,7 @@ import csv
 import re
 import os
 import random
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 AUTHOR_HMSET_COMMAND = 'HMSET {key} name "{name}" author_id "{author_id}"'
 USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}" escaped_email "{escaped_email}" user_id "{user_id}"'
@@ -16,6 +16,8 @@ SEATTLE = "-122.335167,47.608013"
 NEW_YORK = "-73.935242,40.730610"
 
 PUNCTUATION = re.compile(r"([,.<>{}\[\]\"':;!@#$%^&*()-+=~])")
+JANUARY_1 = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0,
+                     tzinfo=timezone.utc)
 
 
 def escape_quotes(string):
@@ -115,13 +117,12 @@ class DataGenerator:
         self.users[user_id] = user
 
     def generate_checkout_data(self):
-        TODAY = date(year=2021, month=1, day=1)
         # Late checkouts
         checkout_length_days = 30
         for user_id in range(0, 12):
             book_isbn13 = "9780393059168"  # Sherlock Holmes
             key = self.keys.checkout(user_id, book_isbn13)
-            checkout_date = TODAY - timedelta(days=35)
+            checkout_date = JANUARY_1 - timedelta(days=35)
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
                                               geopoint=SEATTLE,
@@ -137,15 +138,14 @@ class DataGenerator:
         for user_id in range(12, len(self.users) - 1):
             book_isbn13 = random.choice(self.book_isbn13s)
             key = self.keys.checkout(user_id, book_isbn13)
-            checkout_date = TODAY - timedelta(days=14)
+            checkout_date = JANUARY_1
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
                                               geopoint=NEW_YORK,
                                               user_id=user_id,
                                               book_isbn13=book_isbn13,
                                               return_date="\"\"",
-                                              checkout_date=datetime.combine(
-                                                  checkout_date, datetime.min.time()).timestamp(),
+                                              checkout_date=checkout_date.timestamp(),
                                               checkout_length_days=checkout_length_days)
             ]
 

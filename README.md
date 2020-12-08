@@ -127,21 +127,6 @@ query is treated as a text value. `NOSTEM` tells RediSearch that we don't need t
 index terms for this field using "stemming," which is an approach that helps with
 full-text search, but not with exact-phrase matches.
 
-If the values in a field will contain punctuation and you want to be able to search
-for exact matches using that punctuation (e.g., email addresses), you'll need to
-escape any punctuation in the values when you index. And then when you query,
-you also need to escape punctuation.
-
-As an example, if the `users-idx` index stored email addresses as TEXT NOSTEM fields instead of TAG fields, a query for a specific address might look like this:
-
-    FT.SEARCH users-idx "@escaped_email:k\\.brown\\@example\\.com"
-
-Note that when we added the Redis Hash containing this email address, we would have
-needed to escape any punctuation in the string -- in addition to escaping punctuation
-in this query. The punctuation you'd need to escape is:
-
-    ,.<>{}[]"':;!@#$%^&*()-+=~
-
 ### Boolean logic
 
 AND is implied by multiple fields:
@@ -180,17 +165,18 @@ Infinite start value:
 
 To work with dates in RediSearch, you must treat them as numbers. The easiest way is using UNIX timestamps and the UTC timezone.
 
-Finding checkouts between January 1, 2021 and February 1, 2021:
+Finding checkouts between December 1, 2020 and January 1, 2021:
 
-    FT.SEARCH checkouts-idx "@:[1609459200 1612137600]"
+    FT.SEARCH checkouts-idx "@checkout_date:[1606780800 1609459200]"
 
 The same rules about "inf" apply here. Finding all checkouts since January 1:
 
-    FT.SEARCH checkouts-idx "@:[1609459200 +inf]"
+    FT.SEARCH checkouts-idx "@checkout_date:[1609459200 +inf]"
 
-To find a specific date, you have to pass the same timestamp in as both the lower and upper bound of the number:
+To find a specific date, you have to pass the same timestamp in as both the lower and upper bound of the number.
+Here we're searching for all checkouts _on_ January 1, 2021:
 
-    FT.SEARCH checkouts-idx "@:[1609459200 1609459200]"
+    FT.SEARCH checkouts-idx "@checkout_date:[1609459200 1609459200]"
 
 ### Geo radius
 
@@ -239,13 +225,11 @@ always escape the following punctuation in queries:
 
 Find the number of books authored or co-authored by J. K. Rowling:
 
-    FT.AGGREGATE books-idx * APPLY "split(@authors, ';')" AS authors GROUPBY 1 "@authors" REDUCE COUNT 1 "@authors" FILTER "@authors=='rowling, j.k.' || @authors=='j. k. rowling'"
-
-Count the number of books with the title "Harry Potter":
+    FT.AGGREGATE books-idx * APPLY "split(@authors, ';')" AS authors GROUPBY 1 "@authors" REDUCE COUNT 1 "@authors" AS book_count FILTER "@authors=='rowling, j.k.' || @authors=='j. k. rowling'"
 
 Count the number of book that referenced "Harry Potter" grouped by publication year:
 
-    FT.AGGREGATE books-idx "Harry Potter" GROUPBY 1 "@published_year" REDUCE COUNT 1 "@authors"
+    FT.AGGREGATE books-idx "Harry Potter" GROUPBY 1 "@published_year" REDUCE COUNT 1 "@authors" AS book_count
 
 ## Full-text search
 
@@ -263,7 +247,7 @@ Wildcard queries -- all documents in the index:
 
 Adjusting the score of a single clause in the query -- this should return _Harry Potter and the Goblet of Fire_ as the first result:
 
-    FT.SEARCH books-idx "potter" (goblet) => { $weight: 10.0}
+    FT.SEARCH books-idx "potter (goblet) => { $weight: 10.0}"
 
 Getting highlights:
 
@@ -275,6 +259,8 @@ Summarizing fields:
 
 ## Advanced Topics
 
+### Partial Indexes
+
 Like partial indexes in a relational database, you can use the `FILTER` option to `FT.CREATE`. Use the that option in the following command create an index on checkouts of a specific book:
 
     FT.CREATE sherlock-checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: FILTER "@book_isbn=='9780393059168'" SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
@@ -282,3 +268,27 @@ Like partial indexes in a relational database, you can use the `FILTER` option t
 Now you can query for only users who've checked out this book:
 
     FT.SEARCH sherlock-checkouts-idx *
+
+### Exact-matching Punctuation
+
+If the values in a field will contain punctuation and you want to be able to search
+for exact matches using that punctuation (e.g., email addresses), you'll need to
+escape any punctuation in the values when you index. And then when you query,
+you also need to escape punctuation.
+
+As an example, the `users-idx` index stores email addresses as TEXT NOSTEM
+fields _and_ as TAG fields, to provide examples for both. When we added the
+email address that we planned to use as a TEXT field, we escaped all the
+punctuation, like so:
+
+    HMSET ru203:user:details:28 first_name "Kelvin" last_name "Brown" email "k.brown@example.com" escaped_email "k\\.brown\\@example\\.com" user_id "28"
+
+To query this field later for an exact-match on an email address, we also need to
+escape any punctuation in the query:
+
+    FT.SEARCH users-idx "@escaped_email:k\\.brown\\@example\\.com"
+
+If you want to find exact-matches on punctuation, the punctuation you need to
+escape when indexing _and_ querying is:
+
+    ,.<>{}[]"':;!@#$%^&*()-+=~
