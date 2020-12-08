@@ -43,7 +43,7 @@ following diagram.
  |  email       |   +----|--|  user_id               |
  |              |   |    |  |                        |
  |  user_id     |---|    |--|  book_isbn13           |
- +--------------+        |  | +                      |
+ +--------------+        |  |                        |
                          |  |  checkout_date         |
                          |  |                        |
       Books              |  |  checkout_length_days  |
