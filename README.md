@@ -101,7 +101,7 @@ Then run the following commands, one at a time:
 
     FT.CREATE checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn13 TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
 
-Like partial indexes in a relational database, you can use the `FILTER` option to `FT.CREATE`. Use the that option in the following command create an index on checkouts of a specific book:
+Like partial indexes in a relational database, you can use the `FILTER` option to `FT.CREATE`. Use that option in the following command to create an index on checkouts of a specific book:
 
     FT.CREATE sherlock-checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: FILTER "@book_isbn13=='9780393059168'" SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn13 TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
 
