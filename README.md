@@ -256,7 +256,7 @@ Fuzzy-matching (Levenshtein distance) query:
 
     FT.SEARCH books-idx "%pott%"
 
-Wildcard queries -- all docsuments in the index:
+Wildcard queries -- all documents in the index:
 
     FT.SEARCH books-idx *
 
