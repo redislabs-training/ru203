@@ -4,30 +4,28 @@ Example code for the Redis University course RU203.
 
 ## Introduction
 
-This repository contains example data that you can load into an instance of Redis
-running the RediSearch module, and RediSearch queries you can run against this
-data.
+This repository contains example data and queries to help you learn [RediSearch](https://oss.redislabs.com/redisearch/), the querying, indexing, and full-text search engine for Redis.
 
-## Getting Help
+You can load the sample dataset and then practice running RediSearch queries against that data.
 
-Wondering what this is or how to use it? Stop by the #ru203-querying-indexing-and-full-text-search
+## Getting help
+
+Need help getting started? Stop by the #ru203-querying-indexing-and-full-text-search
 channel in our Discord server: https://discord.gg/wYQJsk5c4A.
 
 ## Getting RediSearch
 
-You can run Redis with RediSearch for free with a Redis Cloud Essentials account:
+You can get free, cloud-hosted instance of Redis with RediSearch by creating a [Redis Cloud Essentials](https://redislabs.com/try-free/) account.
 
-https://redislabs.com/try-free/
+To run RediSearch locally, you have a couple of options:
 
-You can also install Redis with RediSearch using Docker or by building from source.
-For detailed instructions on how to do so, visit the
-[RediSearch documentation](https://oss.redislabs.com/redisearch/).
+* [Run the RediSearch Docker container](https://oss.redislabs.com/redisearch/Quick_Start.html#running_with_docker)
+* [Build RediSearch from source](https://oss.redislabs.com/redisearch/Quick_Start.html#building_and_running_from_source).
 
 ## The Data Model
 
-The queries in this repository work on a set of Redis Hashes that describe
-books, authors, library checkouts, and users. The hashes look like the
-following diagram.
+The queries in this repository rely on a data model comprised of Redis hashes. The entities in this data model include
+books, authors, library checkouts, and users. The following diagram represents this data model:
 
 ```
 
@@ -37,7 +35,7 @@ following diagram.
  |              |            +----------------+
  |  author_id   |------------|  author_id     |
  +--------------+            |                |
-                         +---|  book_isbn   |
+                         +---|  book_isbn     |
                          |   |                |
       Users              |   +----------------+
  +--------------+        |
@@ -47,13 +45,13 @@ following diagram.
  |              |        |  +------------------------+
  |  email       |   +----|--|  user_id               |
  |              |   |    |  |                        |
- |  user_id     |---|    |--|  book_isbn           |
+ |  user_id     |---|    |--|  book_isbn             |
  +--------------+        |  |                        |
                          |  |  checkout_date         |
                          |  |                        |
       Books              |  |  checkout_length_days  |
  +--------------+        |  |                        |
- |  isbn      |--------+  |  geopoint              |
+ |  isbn        |--------+  |  geopoint                |
  |              |           |                        |
  |  title       |           +------------------------+
  |              |
@@ -78,19 +76,19 @@ write queries.
 
 ## Data
 
-Run the following command to load example data:
+Run the following command to load the example dataset:
 
     $ redis-cli < commands.redis > output
 
-Check the "output" file: you shouldn't have any "Invalid" responses. These may indicate that
-you do not have RediSearch installed properly. If you have any problems, find us on Discord!
+Check the "output" file; you shouldn't have any "Invalid" responses. These may indicate that
+you do not have RediSearch installed properly. If you have any problems, find us on [our Discord channel](https://discord.gg/wYQJsk5c4A).
 
-## Building Indexes
+## Building indexes
 
 This data ships without RediSearch indexes, so you need to create them yourself.
 
 We're going to give you all the commands you need to create these indexes, but
-before you run them, make sure you're in the redis CLI:
+before you run these index commands, make sure you're in the redis CLI:
 
     $ redis-cli
 
@@ -118,32 +116,33 @@ This section will talk about querying, and later in this document you can find e
 
 ### Exact text matches
 
-Run the following query to find books with a specific ISBN:
+Run the following query to find books with a specific [ISBN](https://en.wikipedia.org/wiki/International_Standard_Book_Number):
 
     FT.SEARCH checkouts-idx "@book_isbn:9780393059168"
 
-The books-idx indexes the `book_isbn` field as `TEXT NOSTEM`, so the ISBN in this
-query is treated as a text value. `NOSTEM` tells RediSearch that we don't need to
-index terms for this field using "stemming," which is an approach that helps with
-full-text search, but not with exact-phrase matches.
+The `books-idx` index stores the `book_isbn` field as `TEXT NOSTEM`, so the ISBN in this query is treated as a literal text value.
+
+`NOSTEM` tells RediSearch not to apply any special stemming or tokenization rules when adding this term to the index.
+Tokenization and stemming help with
+full-text search but not with exact-phrase matches.
 
 ### Boolean logic
 
-AND is implied by multiple fields:
+A boolean `AND` is implied by multiple fields:
 
     FT.SEARCH books-idx "@authors:rowling @title:goblet"
 
-OR:
+Here's a boolean `OR` (represented by the `|` character):
 
     FT.SEARCH books-idx "@authors:rowling | @authors:tolkien"
 
-NOT:
+You represent a boolean `NOT` with the `-` character):
 
     FT.SEARCH books-idx "@authors:tolkien' -@title:silmarillion"
 
 ### Numbers and numeric ranges
 
-NUMERIC values are only really useful if you plan on doing number range queries. If you don't, index the value as TEXT NOSTEM, and you'll be able to do exact-phrase queries to find specific values.
+`NUMERIC` index types are useful when you need numeric range queries. If you only plan to query these values as exact numeric matches, then you should index them as `TEXT NOSTEM`.
 
 If you index as NUMERIC and want to find a specific value, you need to use the range syntax, specifying that value as the lower and upper range. For example, all books published in 1955:
 
@@ -153,11 +152,11 @@ With a known end value:
 
     FT.SEARCH books-idx "@published_year:[2018 2020]"
 
- With an infinite end value:
+With an unbounded end value:
 
     FT.SEARCH books-idx "@published_year:[2018 +inf]"
 
-Infinite start value:
+With an unbounded start value:
 
     FT.SEARCH books-idx "@published_year:[-inf 1925]"
 
@@ -188,7 +187,7 @@ Checkouts near Seattle:
 
     FT.SEARCH checkouts-idx "@geopoint:[-122.335167 47.608013 1 mi]"
 
-Note that when storing coordinates in a Hash, and when querying, the coordinates should appear in longitude, latitude order.
+Note that when storing coordinates in a hash, and when querying, the coordinates should appear in (longitude, latitude) order.
 
 Thus the HMSET command for one of these checkout hashes should look like this:
 
@@ -212,7 +211,7 @@ Tags accept the OR operator -- Tolkien or J. K. Rowling
 
 NOTE: When tags contain spaces or punctuation, you need to escape them. If we had a tag for "j. r. r. tolkien" instead of author ID, to query it you would need to write "@authors:{j\\. r\\. r\\. tolkien" (we don't have such a tag).
 
-Tag fields are also useful for doing exact-matches on fields when you only ever want to make exact-matches. In other words, you don't need RediSearch to tokenize the values. For example, if you store email addresses in a tag field, as the users-idx index does, then you can search for exact email addresses like so:
+Tag fields are also useful for doing exact matches on fields when you only ever want to make exact matches. In other words, you don't need RediSearch to tokenize the values. For example, if you store email addresses in a tag field, as the users-idx index does, then you can search for exact email addresses like so:
 
     FT.SEARCH users-idx "@email:{k\\.brown\\@example\\.com}"
 
@@ -227,7 +226,7 @@ Find the number of books authored or co-authored by J. K. Rowling:
 
     FT.AGGREGATE books-idx * APPLY "split(@authors, ';')" AS authors GROUPBY 1 "@authors" REDUCE COUNT 1 "@authors" AS book_count FILTER "@authors=='rowling, j.k.' || @authors=='j. k. rowling'"
 
-Count the number of book that referenced "Harry Potter" grouped by publication year:
+Count the number of book that reference "Harry Potter" and group them by publication year:
 
     FT.AGGREGATE books-idx "Harry Potter" GROUPBY 1 "@published_year" REDUCE COUNT 1 "@authors" AS book_count
 
