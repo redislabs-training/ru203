@@ -8,6 +8,11 @@ This repository contains example data that you can load into an instance of Redi
 running the RediSearch module, and RediSearch queries you can run against this
 data.
 
+## Getting Help
+
+Wondering what this is or how to use it? Stop by the #ru203-querying-indexing-and-full-text-search
+channel in our Discord server: https://discord.gg/wYQJsk5c4A.
+
 ## Getting RediSearch
 
 You can run Redis with RediSearch for free with a Redis Cloud Essentials account:
@@ -32,7 +37,7 @@ following diagram.
  |              |            +----------------+
  |  author_id   |------------|  author_id     |
  +--------------+            |                |
-                         +---|  book_isbn13   |
+                         +---|  book_isbn   |
                          |   |                |
       Users              |   +----------------+
  +--------------+        |
@@ -42,13 +47,13 @@ following diagram.
  |              |        |  +------------------------+
  |  email       |   +----|--|  user_id               |
  |              |   |    |  |                        |
- |  user_id     |---|    |--|  book_isbn13           |
+ |  user_id     |---|    |--|  book_isbn           |
  +--------------+        |  |                        |
                          |  |  checkout_date         |
                          |  |                        |
       Books              |  |  checkout_length_days  |
  +--------------+        |  |                        |
- |  isbn13      |--------+  |  geopoint              |
+ |  isbn      |--------+  |  geopoint              |
  |              |           |                        |
  |  title       |           +------------------------+
  |              |
@@ -73,12 +78,12 @@ write queries.
 
 ## Data
 
-Run the following commands to load example data -- you will need Python 3.8 or higher:
+Run the following command to load example data:
 
-    $ python loader.py
     $ redis-cli < commands.redis > output
 
-Check the "output" file: you shouldn't have any "Invalid" responses.
+Check the "output" file: you shouldn't have any "Invalid" responses. These may indicate that
+you do not have RediSearch installed properly. If you have any problems, find us on Discord!
 
 ## Building Indexes
 
@@ -89,21 +94,17 @@ before you run them, make sure you're in the redis CLI:
 
     $ redis-cli
 
-Then run the following commands, one at a time:
+Then run the following commands:
 
-    FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn13 TEXT NOSTEM SORTABLE title TEXT WEIGHT 2.0 SORTABLE subtitle TEXT SORTABLE thumbnail TEXT NOSTEM NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
+    FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn TEXT NOSTEM SORTABLE title TEXT WEIGHT 2.0 SORTABLE subtitle TEXT SORTABLE thumbnail TEXT NOSTEM NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
 
-    FT.CREATE users-idx ON HASH PREFIX 1 ru203:user:details: SCHEMA first_name TEXT SORTABLE last_name TEXT SORTABLE email TAG SORTABLE user_id TEXT NOSTEM SORTABLE
+    FT.CREATE users-idx ON HASH PREFIX 1 ru203:user:details: SCHEMA first_name TEXT SORTABLE last_name TEXT SORTABLE email TAG SORTABLE escaped_email TEXT NOSTEM SORTABLE user_id TEXT NOSTEM SORTABLE
 
     FT.CREATE authors-idx ON HASH PREFIX 1 ru203:author:details: SCHEMA name TEXT SORTABLE author_id TEXT NOSTEM SORTABLE
 
-    FT.CREATE authors-books-idx ON HASH PREFIX 1 ru203:author:books: SCHEMA book_isbn13 TEXT NOSTEM SORTABLE author_id TEXT NOSTEM SORTABLE
+    FT.CREATE authors-books-idx ON HASH PREFIX 1 ru203:author:books: SCHEMA book_isbn TEXT NOSTEM SORTABLE author_id TEXT NOSTEM SORTABLE
 
-    FT.CREATE checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn13 TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
-
-Like partial indexes in a relational database, you can use the `FILTER` option to `FT.CREATE`. Use the that option in the following command create an index on checkouts of a specific book:
-
-    FT.CREATE sherlock-checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: FILTER "@book_isbn13=='9780393059168'" SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn13 TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
+    FT.CREATE checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
 
 ## Querying
 
@@ -119,9 +120,9 @@ This section will talk about querying, and later in this document you can find e
 
 Run the following query to find books with a specific ISBN:
 
-    FT.SEARCH checkouts-idx "@book_isbn13:9780393059168"
+    FT.SEARCH checkouts-idx "@book_isbn:9780393059168"
 
-The books-idx indexes the `book_isbn13` field as `TEXT NOSTEM`, so the ISBN in this
+The books-idx indexes the `book_isbn` field as `TEXT NOSTEM`, so the ISBN in this
 query is treated as a text value. `NOSTEM` tells RediSearch that we don't need to
 index terms for this field using "stemming," which is an approach that helps with
 full-text search, but not with exact-phrase matches.
@@ -133,7 +134,7 @@ you also need to escape punctuation.
 
 As an example, if the `users-idx` index stored email addresses as TEXT NOSTEM fields instead of TAG fields, a query for a specific address might look like this:
 
-    FT.SEARCH users-idx "@email:k\\.brown\\@example\\.com"
+    FT.SEARCH users-idx "@escaped_email:k\\.brown\\@example\\.com"
 
 Note that when we added the Redis Hash containing this email address, we would have
 needed to escape any punctuation in the string -- in addition to escaping punctuation
@@ -205,7 +206,7 @@ Note that when storing coordinates in a Hash, and when querying, the coordinates
 
 Thus the HMSET command for one of these checkout hashes should look like this:
 
-    HMSET ru203:book:checkout:48-9780007130313 user_id 48 book_isbn13 9780007130313 checkout_date 1608278400.0 checkout_length_days 30 geopoint -73.935242,40.730610
+    HMSET ru203:book:checkout:48-9780007130313 user_id 48 book_isbn 9780007130313 checkout_date 1608278400.0 checkout_length_days 30 geopoint -73.935242,40.730610
 
 ### Sorting results
 
@@ -271,3 +272,13 @@ Getting highlights:
 Summarizing fields:
 
     FT.SEARCH books-idx agamemnon SUMMARIZE FIELDS 1 description FRAGS 3 LEN 25
+
+## Advanced Topics
+
+Like partial indexes in a relational database, you can use the `FILTER` option to `FT.CREATE`. Use the that option in the following command create an index on checkouts of a specific book:
+
+    FT.CREATE sherlock-checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: FILTER "@book_isbn=='9780393059168'" SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
+
+Now you can query for only users who've checked out this book:
+
+    FT.SEARCH sherlock-checkouts-idx *

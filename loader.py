@@ -1,10 +1,11 @@
 import csv
+import re
 import os
 import random
 from datetime import date, datetime, timedelta
 
 AUTHOR_HMSET_COMMAND = 'HMSET {key} name "{name}" author_id "{author_id}"'
-USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}" user_id "{user_id}"'
+USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}" escaped_email "{escaped_email}" user_id "{user_id}"'
 CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn13 {book_isbn13} checkout_date {checkout_date} checkout_length_days {checkout_length_days} geopoint {geopoint}"
 BOOK_HMSET_COMMAND = 'HMSET {key} isbn13 "{isbn13}" title "{title}" subtitle "{subtitle}" thumbnail "{thumbnail}" description "{description}" categories "{categories}" authors "{authors}" author_ids "{author_ids}"'
 AUTHORS_BOOKS_HMSET_COMMAND = 'HMSET {key} book_isbn13 {book_isbn13} author_id {author_id}'
@@ -14,9 +15,15 @@ PREFIX = "ru203"
 SEATTLE = "-122.335167,47.608013"
 NEW_YORK = "-73.935242,40.730610"
 
+PUNCTUATION = re.compile(r"([,.<>{}\[\]\"':;!@#$%^&*()-+=~])")
+
 
 def escape_quotes(string):
     return string.replace('"', '\\"').replace("'", "\\'")
+
+
+def escape_punctuation(string):
+    return PUNCTUATION.sub(r'\\\\\1', string)
 
 
 class Keys:
@@ -102,7 +109,9 @@ class DataGenerator:
 
     def add_user(self, user_id, user):
         user_key = self.keys.user(user_id)
-        self.commands += [USER_HMSET_COMMAND.format(key=user_key, user_id=user_id, **user)]
+        escaped_email = escape_punctuation(user['email'])
+        self.commands += [USER_HMSET_COMMAND.format(key=user_key, user_id=user_id,
+                                                    escaped_email=escaped_email, **user)]
         self.users[user_id] = user
 
     def generate_checkout_data(self):
