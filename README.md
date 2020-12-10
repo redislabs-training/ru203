@@ -129,7 +129,7 @@ This section will talk about querying, and later in this document you can find e
 ### Finding exact string matches
 
 If you know that you will only ever query a field for exact string matches
-(like IDs, categories, or email addresses), then the most efficient field
+like IDs, categories, or email addresses, then the most efficient field
 type is TAG. This field type isn't tokenized or stemmed, making it ideal for
 exact string matches.
 
