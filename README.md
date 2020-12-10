@@ -24,7 +24,7 @@ To run RediSearch locally, you have a couple of options:
 
 ## The Data Model
 
-The queries in this repository rely on a data model comprised of Redis
+The queries in this repository rely on a data model composed of Redis
 hashes. The entities in this data model include books, authors, library
 checkouts, and users. The following diagram represents this data model:
 
