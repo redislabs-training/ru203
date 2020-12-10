@@ -138,7 +138,7 @@ Run the following query to find books with a specific [ISBN](https://en.wikipedi
     FT.SEARCH checkouts-idx "@book_isbn:{9780393059168}"
 
 ---
-**A note on querying specific fields:** This example and all others in the "querying" section of this course use field-specific searches. You specify a term in the query -- here, the term is `{9780393059168}` -- applies to a specific field by prefixing it with the `@` symbol and the field name. In the prior example, `@book_isbn` tells RediSearch to look in the `book_isbn` field within the index. When we talk about full-text search, you'll see examples of searching across fields.
+**A note on querying specific fields:** This example and all others in the "querying" section of this course use field-specific searches. You specify that a term in the query -- here, the term is `{9780393059168}` -- applies to a specific field by prefixing it with the `@` symbol and the field name. In the prior example, `@book_isbn` tells RediSearch to look in the `book_isbn` field within the index. When we talk about full-text search, you'll see examples of searching across fields.
 
 ---
 
