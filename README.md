@@ -169,7 +169,7 @@ One thing to note about NUMERIC fields is that querying them always requires a r
 
     FT.SEARCH books-idx "@published_year:[1955 1955]"
 
-To instead to query for books published between 2018 and 2020, doing so looks like this:
+To instead query for books published between 2018 and 2020, doing so looks like this:
 
     FT.SEARCH books-idx "@published_year:[2018 2020]"
 
@@ -371,7 +371,7 @@ Visit the [course signup page](https://university.redislabs.com/courses/ru203/) 
 
 ### Partial Indexes
 
-Like partial indexes in a relational database, you can use the `FILTER` option to `FT.CREATE`. Use the that option in the following command create an index on checkouts of a specific book:
+Like partial indexes in a relational database, you can use the `FILTER` option to `FT.CREATE`. Use that option in the following command to create an index on checkouts of a specific book:
 
     FT.CREATE sherlock-checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: FILTER "@book_isbn=='9780393059168'" SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
 
