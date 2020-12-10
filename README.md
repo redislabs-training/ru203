@@ -24,8 +24,9 @@ To run RediSearch locally, you have a couple of options:
 
 ## The Data Model
 
-The queries in this repository rely on a data model comprised of Redis hashes. The entities in this data model include
-books, authors, library checkouts, and users. The following diagram represents this data model:
+The queries in this repository rely on a data model comprised of Redis
+hashes. The entities in this data model include books, authors, library
+checkouts, and users. The following diagram represents this data model:
 
 ```
 
@@ -125,12 +126,12 @@ When you perform a full-text search, on the other hand, you may not know the exa
 
 This section will talk about querying, and later in this document you can find examples of full-text searches.
 
-### Finding exact matches in text
+### Finding exact string matches
 
-If you know that you will only ever query a field for exact text matches (like
-IDs, categories, or email addresses), then the most efficient field type is
-TAG. This field type isn't tokenized or stemmed, making it ideal for exact text
-matches.
+If you know that you will only ever query a field for exact string matches
+(like IDs, categories, or email addresses), then the most efficient field
+type is TAG. This field type isn't tokenized or stemmed, making it ideal for
+exact string matches.
 
 Run the following query to find books with a specific [ISBN](https://en.wikipedia.org/wiki/International_Standard_Book_Number):
 
