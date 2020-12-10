@@ -107,11 +107,11 @@ Then run the following commands:
 
     FT.CREATE checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: SCHEMA user_id TAG SORTABLE book_isbn TAG SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
 
-## Querying
+## Querying structured data
 
 ### Querying versus full-text search
 
-For the purposes of this course, we organize concepts based on whether you are "querying" or doing "full-text search." The reality is that full-text search is a kind of query, and in fact, you use the same RediSearch command for both: `FT.SEARCH`.
+For the purposes of this course, we organize concepts based on whether you are querying structured data or doing full-text search. The reality is that full-text search is a kind of query, and in fact, you use the same RediSearch command for both: `FT.SEARCH`.
 
 However, there are important differences. When you query, you are probably looking for a known value, or set of values, in structured data. Imagine data such as the following:
 
@@ -122,7 +122,7 @@ However, there are important differences. When you query, you are probably looki
 
 So, you might query for a specific date, an ID, or a range of numbers.
 
-When you perform a full-text search, on the other hand, you may not know the exact value you want to find. And the fields you're searching may contain unstructure data, like descriptions or user reviews. Full-text search therefore includes techniques like stemming (searching for the "stem" of a word, e.g. "run" instead of "running"), prefix matching (finding strings that start with given string), and fuzzy-matching, which finds related, or alternate spellings of a term, using Levenshtein distance.
+When you perform a full-text search, on the other hand, you may not know the exact value you want to find. And the fields you're searching may contain unstructured data, like product descriptions or user reviews. Full-text search therefore includes techniques like stemming (searching for the "stems" of words, e.g. "run" instead of "running"), prefix matching (finding strings that start with a given string), and fuzzy-matching, which finds related, or alternate spellings of a term, using Levenshtein distance.
 
 This section will talk about querying, and later in this document you can find examples of full-text searches.
 
@@ -366,3 +366,61 @@ Sign up for the course to learn about advanced topics, like:
 * Handling spelling errors
 
 Visit the [course signup page](https://university.redislabs.com/courses/ru203/) to register!
+
+
+
+### Partial Indexes
+
+Like partial indexes in a relational database, you can use the `FILTER` option to `FT.CREATE`. Use the that option in the following command create an index on checkouts of a specific book:
+
+    FT.CREATE sherlock-checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: FILTER "@book_isbn=='9780393059168'" SCHEMA user_id TEXT NOSTEM SORTABLE book_isbn TEXT NOSTEM SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
+
+Now you can query for only users who've checked out this book:
+
+    FT.SEARCH sherlock-checkouts-idx *
+
+### Adjusting the Score of a Term
+
+Adjusting the score of a single term in the query -- this should return _Harry Potter and the Goblet of Fire_ as the first result:
+
+    FT.SEARCH books-idx "potter (goblet) => { $weight: 10.0}"
+
+### Getting All Documents in an Index
+
+Wildcard queries -- all documents in the index:
+
+    FT.SEARCH books-idx *
+
+### Exact-matching Punctuation
+
+If the values in a field will contain punctuation and you want to be able to search
+for exact matches using that punctuation (e.g., email addresses), you'll need to
+escape any punctuation in the values when you index. And then when you query,
+you also need to escape punctuation.
+
+As an example, the `users-idx` index stores email addresses as TEXT NOSTEM
+fields _and_ as TAG fields, to provide examples for both. When we added the
+email address that we planned to use as a TEXT field, we escaped all the
+punctuation, like so:
+
+    HMSET ru203:user:details:28 first_name "Kelvin" last_name "Brown" email "k.brown@example.com" escaped_email "k\\.brown\\@example\\.com" user_id "28"
+
+To query this field later for an exact-match on an email address, we also need to
+escape any punctuation in the query:
+
+    FT.SEARCH users-idx "@escaped_email:k\\.brown\\@example\\.com"
+
+If you want to find exact-matches on punctuation, the punctuation you need to
+escape when indexing _and_ querying is:
+
+    ,.<>{}[]"':;!@#$%^&*()-+=~
+
+### Handling Spelling Errors
+
+Fuzzy-matching (Levenshtein distance) query -- searching across all indexed TEXT fields using Levenshtein distance (transparently handle some spelling errors in a query):
+
+    FT.SEARCH books-idx "%pott%"
+
+Explicitly find potential misspellings:
+
+    FT.SPELLCHECK books-idx wizrds
