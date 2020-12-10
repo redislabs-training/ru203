@@ -6,9 +6,9 @@ from datetime import datetime, timedelta, timezone
 
 AUTHOR_HMSET_COMMAND = 'HMSET {key} name "{name}" author_id "{author_id}"'
 USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}" escaped_email "{escaped_email}" user_id "{user_id}"'
-CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn13 {book_isbn13} checkout_date {checkout_date} checkout_length_days {checkout_length_days} geopoint {geopoint}"
-BOOK_HMSET_COMMAND = 'HMSET {key} isbn13 "{isbn13}" title "{title}" subtitle "{subtitle}" thumbnail "{thumbnail}" description "{description}" categories "{categories}" authors "{authors}" author_ids "{author_ids}"'
-AUTHORS_BOOKS_HMSET_COMMAND = 'HMSET {key} book_isbn13 {book_isbn13} author_id {author_id}'
+CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn {book_isbn} checkout_date {checkout_date} checkout_length_days {checkout_length_days} geopoint {geopoint}"
+BOOK_HMSET_COMMAND = 'HMSET {key} isbn "{isbn}" title "{title}" subtitle "{subtitle}" thumbnail "{thumbnail}" description "{description}" categories "{categories}" authors "{authors}" author_ids "{author_ids}"'
+AUTHORS_BOOKS_HMSET_COMMAND = 'HMSET {key} book_isbn {book_isbn} author_id {author_id}'
 
 PREFIX = "ru203"
 
@@ -32,20 +32,20 @@ class Keys:
     def __init__(self, prefix):
         self.prefix = prefix
 
-    def book(self, book_isbn13):
-        return f"{self.prefix}:book:details:{book_isbn13}"
+    def book(self, book_isbn):
+        return f"{self.prefix}:book:details:{book_isbn}"
 
     def author(self, author_id):
         return f"{self.prefix}:author:details:{author_id}"
 
-    def author_books(self, author_id, book_isbn13):
-        return f"{self.prefix}:author:books:{author_id}-{book_isbn13}"
+    def author_books(self, author_id, book_isbn):
+        return f"{self.prefix}:author:books:{author_id}-{book_isbn}"
 
     def user(self, user_id):
         return f"{self.prefix}:user:details:{user_id}"
 
-    def checkout(self, user_id, book_isbn13):
-        return f"{self.prefix}:book:checkout:{user_id}-{book_isbn13}"
+    def checkout(self, user_id, book_isbn):
+        return f"{self.prefix}:book:checkout:{user_id}-{book_isbn}"
 
 
 class DataGenerator:
@@ -54,7 +54,7 @@ class DataGenerator:
         self.authors = {}
         self.categories = {}
         self.users = {}
-        self.book_isbn13s = []
+        self.book_isbns = []
         self.keys = Keys(prefix=PREFIX)
 
     def add_author(self, book, author):
@@ -74,13 +74,14 @@ class DataGenerator:
 
         author_books_key = self.keys.author_books(author_id, book['isbn13'])
         self.commands += [
-            AUTHORS_BOOKS_HMSET_COMMAND.format(key=author_books_key, author_id=author_id, book_isbn13=book['isbn13'])
+            AUTHORS_BOOKS_HMSET_COMMAND.format(key=author_books_key, author_id=author_id, book_isbn=book['isbn13'])
         ]
 
         return author_id
 
     def add_book(self, book):
-        book_key = self.keys.book(book['isbn13'])
+        isbn = book['isbn13']
+        book_key = self.keys.book(isbn)
         title = escape_quotes(book.pop('title'))
         description = escape_quotes(book.pop('description'))
         subtitle = escape_quotes(book.pop('subtitle'))
@@ -100,6 +101,7 @@ class DataGenerator:
 
         self.commands += [
             command.format(key=book_key,
+                           isbn=isbn,
                            title=title,
                            description=description,
                            subtitle=subtitle,
@@ -107,7 +109,7 @@ class DataGenerator:
                            authors=book_authors,
                            **book)
         ]
-        self.book_isbn13s += [book['isbn13']]
+        self.book_isbns += [isbn]
 
     def add_user(self, user_id, user):
         user_key = self.keys.user(user_id)
@@ -120,14 +122,14 @@ class DataGenerator:
         # Late checkouts
         checkout_length_days = 30
         for user_id in range(0, 12):
-            book_isbn13 = "9780393059168"  # Sherlock Holmes
-            key = self.keys.checkout(user_id, book_isbn13)
+            book_isbn = "9780393059168"  # Sherlock Holmes
+            key = self.keys.checkout(user_id, book_isbn)
             checkout_date = JANUARY_1 - timedelta(days=35)
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
                                               geopoint=SEATTLE,
                                               user_id=user_id,
-                                              book_isbn13=book_isbn13,
+                                              book_isbn=book_isbn,
                                               return_date="\"\"",
                                               checkout_date=datetime.combine(
                                                   checkout_date, datetime.min.time()).timestamp(),
@@ -136,14 +138,14 @@ class DataGenerator:
 
         # On-time checkouts
         for user_id in range(12, len(self.users) - 1):
-            book_isbn13 = random.choice(self.book_isbn13s)
-            key = self.keys.checkout(user_id, book_isbn13)
+            book_isbn = random.choice(self.book_isbns)
+            key = self.keys.checkout(user_id, book_isbn)
             checkout_date = JANUARY_1
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
                                               geopoint=NEW_YORK,
                                               user_id=user_id,
-                                              book_isbn13=book_isbn13,
+                                              book_isbn=book_isbn,
                                               return_date="\"\"",
                                               checkout_date=checkout_date.timestamp(),
                                               checkout_length_days=checkout_length_days)
