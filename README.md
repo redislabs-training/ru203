@@ -46,7 +46,9 @@ checkouts, and users. The following diagram represents this data model:
  |              |        |  +------------------------+
  |  email       |   +----|--|  user_id               |
  |              |   |    |  |                        |
- |  user_id     |---|    |--|  book_isbn             |
+ |  user_id     |---+    |  |                        |
+ |              |        |  |                        |
+ |  last_login  |        +--|  book_isbn             |
  +--------------+        |  |                        |
                          |  |  checkout_date         |
                          |  |                        |
@@ -99,7 +101,9 @@ Then run the following commands:
 
     FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn TAG SORTABLE title TEXT WEIGHT 2.0 SORTABLE subtitle TEXT SORTABLE thumbnail TAG NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
 
-    FT.CREATE users-idx ON HASH PREFIX 1 ru203:user:details: SCHEMA first_name TEXT SORTABLE last_name TEXT SORTABLE email TAG SORTABLE escaped_email TEXT NOSTEM SORTABLE user_id TAG SORTABLE
+    FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn TAG SORTABLE title TEXT WEIGHT 2.0 subtitle TEXT SORTABLE thumbnail TAG NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
+
+    FT.CREATE users-idx ON HASH PREFIX 1 ru203:user:details: SCHEMA first_name TEXT SORTABLE last_name TEXT SORTABLE email TAG SORTABLE escaped_email TEXT NOSTEM SORTABLE user_id TAG SORTABLE last_login NUMERIC SORTABLE
 
     FT.CREATE authors-idx ON HASH PREFIX 1 ru203:author:details: SCHEMA name TEXT SORTABLE author_id TAG SORTABLE
 
@@ -153,13 +157,13 @@ TAG fields can have multiple values, and so you can query for documents that con
 You can also use the boolean `OR` operator -- but this can occur within the curly braces that delimit a tag query. See what I mean in this query that searches for books by Tolkien or J. K. Rowling:
 
     FT.SEARCH books-idx "@author_ids:{34 | 1811}"
----
+
 **A note on querying with punctuation:** To query for a tag that includes punctuation, like an email address, you need to escape the punctuation (the data in the underlying Hash does not need to be escaped). For example, if we had a tag for "j. r. r. tolkien" instead of author ID, to query it you would need to write `@authors:{j\\. r\\. r\\. tolkien}`.
 
 Because of this, as a general rule you should always escape the following punctuation in queries:
 
     ,.<>{}[]"':;!@#$%^&*()-+=~
----
+
 
 ### Numbers and numeric ranges
 
@@ -173,8 +177,7 @@ To instead query for books published between 2018 and 2020, doing so looks like 
 
     FT.SEARCH books-idx "@published_year:[2018 2020]"
 
-You can use the value `+inf` for an unbounded end value. For example, this query finds all books published from 2018 to the highest year in the index:
-
+You can use the value `+inf` for an unbounded end value.
     FT.SEARCH books-idx "@published_year:[2018 +inf]"
 
 Using `-inf` specifies an unbounded start value the same way. Here we get all
@@ -221,9 +224,9 @@ Thus the HMSET command for one of these checkout hashes should look like this:
 
     HMSET ru203:book:checkout:48-9780007130313 user_id 48 book_isbn 9780007130313 checkout_date 1608278400.0 checkout_length_days 30 geopoint -73.935242,40.730610
 
-### Binary logic
+### Boolean logic
 
-You can use binary logic to connect multiple terms in a query.
+You can use boolean logic to connect multiple terms in a query.
 
 AND is implied by specifying multiple terms -- here we find all full-text search
 matches of "rowling" in the `authors` field and "goblet" in the `title` field:
@@ -287,9 +290,9 @@ You can also use "prefix-matching" to compare an input string as a prefix agains
 
     FT.SEARCH books-idx "pott*"
 
-### Binary logic, field-specific searches, sorting, and limiting
+### Boolean logic, field-specific searches, sorting, and limiting
 
-All of the techniques mentioned in this document for binary logic, field-specific
+All of the techniques mentioned in this document for boolean logic, field-specific
 searches, sorting, and limiting also work for full-text searches.
 
 For example, we can use a field-specific full-text search for the term "wizard" in the `description` field of books, excluding any books that mention "Harry" in _any_ TEXT field, sort the results by title, and return only the first book found:

@@ -5,15 +5,14 @@ import random
 from datetime import datetime, timedelta, timezone
 
 AUTHOR_HMSET_COMMAND = 'HMSET {key} name "{name}" author_id "{author_id}"'
-USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}" escaped_email "{escaped_email}" user_id "{user_id}"'
+USER_HMSET_COMMAND = 'HMSET {key} first_name "{first_name}" last_name "{last_name}" email "{email}" escaped_email "{escaped_email}" user_id "{user_id}" last_login "{last_login}"'
 CHECKOUT_HMSET_COMMAND = "HMSET {key} user_id {user_id} book_isbn {book_isbn} checkout_date {checkout_date} checkout_length_days {checkout_length_days} geopoint {geopoint}"
-BOOK_HMSET_COMMAND = 'HMSET {key} isbn "{isbn}" title "{title}" subtitle "{subtitle}" thumbnail "{thumbnail}" description "{description}" categories "{categories}" authors "{authors}" author_ids "{author_ids}"'
+BOOK_HMSET_COMMAND = 'HMSET {key} isbn "{isbn}" title "{title}" thumbnail "{thumbnail}" description "{description}" categories "{categories}" authors "{authors}" author_ids "{author_ids}"'
 AUTHORS_BOOKS_HMSET_COMMAND = 'HMSET {key} book_isbn {book_isbn} author_id {author_id}'
 
 PREFIX = "ru203"
 
-SEATTLE = "-122.335167,47.608013"
-NEW_YORK = "-73.935242,40.730610"
+NEW_YORK = "-73.9{},40.7{}"
 
 PUNCTUATION = re.compile(r"([,.<>{}\[\]\"':;!@#$%^&*()-+=~])")
 JANUARY_1 = datetime(year=2021, month=1, day=1, hour=0, minute=0, second=0,
@@ -26,6 +25,10 @@ def escape_quotes(string):
 
 def escape_punctuation(string):
     return PUNCTUATION.sub(r'\\\\\1', string)
+
+
+def random_coordinate():
+    return NEW_YORK.format(random.randint(10000, 90000), random.randint(10000, 90000))
 
 
 class Keys:
@@ -72,19 +75,18 @@ class DataGenerator:
                 AUTHOR_HMSET_COMMAND.format(key=author_key, author_id=author_id, name=author)
             ]
 
-        author_books_key = self.keys.author_books(author_id, book['isbn13'])
+        author_books_key = self.keys.author_books(author_id, book['isbn'])
         self.commands += [
-            AUTHORS_BOOKS_HMSET_COMMAND.format(key=author_books_key, author_id=author_id, book_isbn=book['isbn13'])
+            AUTHORS_BOOKS_HMSET_COMMAND.format(key=author_books_key, author_id=author_id, book_isbn=book['isbn'])
         ]
 
         return author_id
 
     def add_book(self, book):
-        isbn = book['isbn13']
+        isbn = book['isbn']
         book_key = self.keys.book(isbn)
         title = escape_quotes(book.pop('title'))
         description = escape_quotes(book.pop('description'))
-        subtitle = escape_quotes(book.pop('subtitle'))
         book_authors = escape_quotes(book.pop('authors'))
         command = BOOK_HMSET_COMMAND
 
@@ -104,7 +106,6 @@ class DataGenerator:
                            isbn=isbn,
                            title=title,
                            description=description,
-                           subtitle=subtitle,
                            author_ids=author_ids,
                            authors=book_authors,
                            **book)
@@ -114,7 +115,10 @@ class DataGenerator:
     def add_user(self, user_id, user):
         user_key = self.keys.user(user_id)
         escaped_email = escape_punctuation(user['email'])
+        last_login = JANUARY_1 - timedelta(days=random.randint(0, 30),
+                                           hours=random.randint(0, 24))
         self.commands += [USER_HMSET_COMMAND.format(key=user_key, user_id=user_id,
+                                                    last_login=last_login.timestamp(),
                                                     escaped_email=escaped_email, **user)]
         self.users[user_id] = user
 
@@ -127,7 +131,7 @@ class DataGenerator:
             checkout_date = JANUARY_1 - timedelta(days=35)
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
-                                              geopoint=SEATTLE,
+                                              geopoint=random_coordinate(),
                                               user_id=user_id,
                                               book_isbn=book_isbn,
                                               return_date="\"\"",
@@ -143,7 +147,7 @@ class DataGenerator:
             checkout_date = JANUARY_1
             self.commands += [
                 CHECKOUT_HMSET_COMMAND.format(key=key,
-                                              geopoint=NEW_YORK,
+                                              geopoint=random_coordinate(),
                                               user_id=user_id,
                                               book_isbn=book_isbn,
                                               return_date="\"\"",
