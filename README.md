@@ -29,48 +29,47 @@ hashes. The entities in this data model include books, authors, library
 checkouts, and users. The following diagram represents this data model:
 
 ```
-
-      Authors
- +--------------+
- |  name        |               Author-Books
- |              |            +----------------+
- |  author_id   |------------|  author_id     |
- +--------------+            |                |
-                         +---|  book_isbn     |
-                         |   |                |
-      Users              |   +----------------+
- +--------------+        |
- |  first_name  |        |
- |              |        |
- |  last_name   |        |       Checkouts
- |              |        |  +------------------------+
- |  email       |   +----|--|  user_id               |
- |              |   |    |  |                        |
- |  user_id     |---+    |  |                        |
- |              |        |  |                        |
- |  last_login  |        +--|  book_isbn             |
- +--------------+        |  |                        |
-                         |  |  checkout_date         |
-                         |  |                        |
-      Books              |  |  checkout_length_days  |
- +--------------+        |  |                        |
- |  isbn        |--------+  |  geopoint              |
- |              |           |                        |
- |  title       |           +------------------------+
- |              |
- |  subtitle    |
- |              |
- |  thumbnail   |
- |              |
- |  description |
- |              |
- |  categories  |
- |              |
- |  authors     |
- |              |
- |  author_ids  |
- |              |
- +--------------+
+    Authors
++--------------+
+|  name        |               Author-Books
+|              |            +----------------+
+|  author_id   +------------+  author_id     |
+|              |            |                |
++--------------+        +---+  book_isbn     |
+                        |   |                |
+    Users               |   +----------------+
++--------------+        |
+|  first_name  |        |
+|              |        |
+|  last_name   |        |       Checkouts
+|              |        |  +------------------------+
+|  email       |   +----|--+  user_id               |
+|              |   |    |  |                        |
+|  user_id     +---+    +--+  book_isbn             |
+|              |        |  |                        |
+|  last_login  |        |  |  checkout_date         |
+|              |        |  |                        |
++--------------+        |  |  checkout_length_days  |
+                        |  |                        |
+    Books               |  |  geopoint              |
++--------------+        |  |                        |
+|  isbn        +--------+  +------------------------+
+|              |
+|  title       |
+|              |
+|  subtitle    |
+|              |
+|  thumbnail   |
+|              |
+|  description |
+|              |
+|  categories  |
+|              |
+|  authors     |
+|              |
+|  author_ids  |
+|              |
++--------------+
 ```
 
 By running the `FT.CREATE` commands in this document, you will create
