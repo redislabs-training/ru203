@@ -20,7 +20,7 @@ You can get free, cloud-hosted instance of Redis with RediSearch by creating a [
 To run RediSearch locally, you have a couple of options:
 
 * [Run the RediSearch Docker container](https://redislabs.com/blog/getting-started-with-redisearch-2-0/)
-* [Build RediSearch from source](https://oss.redislabs.com/redisearch/Quick_Start.html#building_and_running_from_source).
+* [Build RediSearch from source](https://oss.redislabs.com/redisearch/Quick_Start/?_gl=1*v4bgp*_gcl_aw*R0NMLjE2MDc3MjIwMDIuQ2owS0NRaUF6c3otQlJDQ0FSSXNBTm90RmdNUnl6NXZQMk9lSzYyTXR2OXZJY0JRNXlZUDRBMnNSTXVrc2RQVDdfZkhtRG9JdThsUmdBZ2FBa2g3RUFMd193Y0I.#building_and_running_from_source).
 
 ## The Data Model
 
