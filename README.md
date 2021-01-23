@@ -15,7 +15,7 @@ channel in our Discord server: https://discord.gg/wYQJsk5c4A.
 
 ## Getting RediSearch
 
-You can get free, cloud-hosted instance of Redis with RediSearch by creating a [Redis Cloud Essentials](https://redislabs.com/try-free/) account.
+You can get a free, cloud-hosted instance of Redis with RediSearch by creating a [Redis Cloud Essentials](https://redislabs.com/try-free/) account.
 
 To run RediSearch locally, you have a couple of options:
 
