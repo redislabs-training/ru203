@@ -9,7 +9,7 @@ Follow the steps in this document to get ready to run the example queries from t
 ## Getting help
 
 Need help getting started? Stop by the #ru203-querying-indexing-and-full-text-search
-channel in our Discord server: https://discord.gg/wYQJsk5c4A.
+channel in [our Discord server](https://discord.gg/wYQJsk5c4A).
 
 ## Getting RediSearch
 
