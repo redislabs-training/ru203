@@ -4,7 +4,7 @@
 
 This repository contains example data and setup instructions for the Redis University course [RU203: Querying, Indexing, and Full-Text Search with Redis](https://university.redislabs.com/courses/ru203/).
 
-Follow the steps in this document to load sample data, create indexes, and get ready to run the example queries from the course.
+Follow the steps in this document to get ready to run the example queries from the course.
 
 ## Getting help
 
