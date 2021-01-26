@@ -6,6 +6,7 @@ This repository contains example data and setup instructions for the Redis Unive
 
 To take this course, you'll first need do the following:
 
+1. Clone this git repository
 1. Get RediSearch and load the sample data
 1. Build the RediSearch indexes by running the index creation commands
 
