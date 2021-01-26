@@ -11,15 +11,13 @@ To take this course, you'll first need do the following:
 
 Need help getting started? Stop by the [Redis University Discord server](https://discord.gg/wYQJsk5c4A).
 
-## Step 1: Get RediSearch
-
 To get RediSearch, we recommend either launching it from Docker (for beginners) or building it from source and running the locally (more advanced).
 
-### Option 2: Run RediSearch locally with Docker (Best option for beginners)
+## Option 1: Run RediSearch locally with Docker (Best option for beginners)
 
 First, make sure you have [Docker installed](https://docs.docker.com/get-docker/).
 
-#### 1. Start Redis
+### 1. Start Redis
 
 Next, run the following command from your terminal:
 
@@ -29,7 +27,7 @@ docker run -it --rm --name redis-search-2 -p 6379:6379  redislabs/redisearch:2.0
 
 This will launch a Redis instance with RediSearch installed. The instace will be listening on the local post 6379.
 
-#### 2. Load the sample data
+### 2. Load the sample data
 
 The commands that load the sample data are in the files `commands.redis`, which is part of this git repository. To load this data, run the following command:
 
@@ -37,7 +35,7 @@ The commands that load the sample data are in the files `commands.redis`, which 
 docker exec -i redis-search-2 redis-cli < commands.redis > output3
 ```
 
-#### 3. Create the indexes
+### 3. Create the indexes
 
 To create the indexes, first start the Redis CLI:
 
@@ -47,16 +45,14 @@ docker exec -it redis-search-2 redis-cli
 
 Then paste in the index creation commands.
 
-### Option 2: Build RediSearch from source
+## Option 2: Build RediSearch from source
 
-#### Build RediSearch
-
-#### 1. Build RediSearch and launch Redis
+### 1. Build RediSearch and launch Redis
 
 First, follow the instructions for building and running RediSearch from source](https://oss.redislabs.com/redisearch/Quick_Start/#building_and_running_from_source).
 
 
-#### 2. Load the sample data
+### 2. Load the sample data
 
 The commands that load the sample data are in the files `commands.redis`, which is part of this git repository. To load this data, run the following command from your terminal:
 
@@ -66,7 +62,7 @@ redis-cli < commands.redis > output3
 
 This assumes that you have `redis-cli` in your path.
 
-#### 3. Create the indexes
+### 3. Create the indexes
 
 To create the indexes, first start the Redis CLI:
 
@@ -153,8 +149,6 @@ before you run these index commands, make sure you're in the redis CLI:
 Then run the following commands:
 
     FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn TAG SORTABLE title TEXT WEIGHT 2.0 SORTABLE subtitle TEXT SORTABLE thumbnail TAG NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
-
-    FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn TAG SORTABLE title TEXT WEIGHT 2.0 subtitle TEXT SORTABLE thumbnail TAG NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
 
     FT.CREATE users-idx ON HASH PREFIX 1 ru203:user:details: SCHEMA first_name TEXT SORTABLE last_name TEXT SORTABLE email TAG SORTABLE escaped_email TEXT NOSTEM SORTABLE user_id TAG SORTABLE last_login NUMERIC SORTABLE
 
