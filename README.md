@@ -59,7 +59,7 @@ Then paste in the index creation commands (see the next section for details).
 
 ### 1. Build RediSearch and launch Redis
 
-First, follow the instructions for building and running RediSearch from source](https://oss.redislabs.com/redisearch/Quick_Start/#building_and_running_from_source).
+First, follow the instructions for [building and running RediSearch from source](https://oss.redislabs.com/redisearch/Quick_Start/#building_and_running_from_source).
 
 
 ### 2. Load the sample data
