@@ -32,8 +32,18 @@ This will launch a Redis instance with RediSearch installed. The instace will be
 The commands that load the sample data are in the files `commands.redis`, which is part of this git repository. To load this data, run the following command:
 
 ```
-docker exec -i redis-search-2 redis-cli < commands.redis > output3
+docker exec -i redis-search-2 redis-cli < commands.redis > output.txt
 ```
+
+Check the "output" file for "Invalid" responses.
+
+```
+grep Invalid output.txt
+```
+
+If you have any "Invalid" responses, you might not have RediSearch installed properly. If you have
+any problems, find us on [our Discord
+channel](https://discord.gg/wYQJsk5c4A).
 
 ### 3. Create the indexes
 
@@ -43,7 +53,7 @@ To create the indexes, first start the Redis CLI:
 docker exec -it redis-search-2 redis-cli
 ```
 
-Then paste in the index creation commands.
+Then paste in the index creation commands (see the next section for details).
 
 ## Option 2: Build RediSearch from source
 
@@ -57,10 +67,20 @@ First, follow the instructions for building and running RediSearch from source](
 The commands that load the sample data are in the files `commands.redis`, which is part of this git repository. To load this data, run the following command from your terminal:
 
 ```
-redis-cli < commands.redis > output3
+redis-cli < commands.redis > output.txt
 ```
 
 This assumes that you have `redis-cli` in your path.
+
+Check the "output" file for "Invalid" responses.
+
+```
+grep Invalid output.txt
+```
+
+If you have any "Invalid" responses, you might not have RediSearch installed properly. If you have
+any problems, find us on [our Discord
+channel](https://discord.gg/wYQJsk5c4A).
 
 ### 3. Create the indexes
 
@@ -70,9 +90,36 @@ To create the indexes, first start the Redis CLI:
 redis-cli
 ```
 
-Then paste in the index creation commands.
+Then paste in the index creation commands (see the next section for details).
 
-## The Data Model
+## Building indexes
+
+This data ships without RediSearch indexes, so you need to create them yourself.
+
+We're going to give you all the commands you need to create these indexes, but
+before you run these index commands, make sure you're in the redis CLI:
+
+    $ redis-cli
+
+Then run the following commands:
+
+    FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn TAG SORTABLE title TEXT WEIGHT 2.0 SORTABLE subtitle TEXT SORTABLE thumbnail TAG NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
+
+    FT.CREATE users-idx ON HASH PREFIX 1 ru203:user:details: SCHEMA first_name TEXT SORTABLE last_name TEXT SORTABLE email TAG SORTABLE escaped_email TEXT NOSTEM SORTABLE user_id TAG SORTABLE last_login NUMERIC SORTABLE
+
+    FT.CREATE authors-idx ON HASH PREFIX 1 ru203:author:details: SCHEMA name TEXT SORTABLE author_id TAG SORTABLE
+
+    FT.CREATE authors-books-idx ON HASH PREFIX 1 ru203:author:books: SCHEMA book_isbn TAG SORTABLE author_id TAG SORTABLE
+
+    FT.CREATE checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: SCHEMA user_id TAG SORTABLE book_isbn TAG SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
+
+## You're Ready!
+
+Now, you're ready to take the course.
+
+If you aren't signed up yet, visit the [course signup page](https://university.redislabs.com/courses/ru203/) to register!
+
+## Appendix: The Data Model
 
 The queries in this repository rely on a data model composed of Redis
 hashes. The entities in this data model include books, authors, library
@@ -122,44 +169,5 @@ checkouts, and users. The following diagram represents this data model:
 +--------------+
 ```
 
-By running the `FT.CREATE` commands in this document, you will create
-a number of RediSearch indexes on this data and use those indexes to
-write queries.
 
-## Data
 
-Run the following command to load the example dataset:
-
-    $ redis-cli < commands.redis > output
-
-Check the "output" file; you shouldn't have any "Invalid" responses. These
-may indicate that you do not have RediSearch installed properly. If you have
-any problems, find us on [our Discord
-channel](https://discord.gg/wYQJsk5c4A).
-
-## Building indexes
-
-This data ships without RediSearch indexes, so you need to create them yourself.
-
-We're going to give you all the commands you need to create these indexes, but
-before you run these index commands, make sure you're in the redis CLI:
-
-    $ redis-cli
-
-Then run the following commands:
-
-    FT.CREATE books-idx ON HASH PREFIX 1 ru203:book:details: SCHEMA isbn TAG SORTABLE title TEXT WEIGHT 2.0 SORTABLE subtitle TEXT SORTABLE thumbnail TAG NOINDEX description TEXT SORTABLE published_year NUMERIC SORTABLE average_rating NUMERIC SORTABLE authors TEXT SORTABLE categories TAG SEPARATOR ";" author_ids TAG SEPARATOR ";"
-
-    FT.CREATE users-idx ON HASH PREFIX 1 ru203:user:details: SCHEMA first_name TEXT SORTABLE last_name TEXT SORTABLE email TAG SORTABLE escaped_email TEXT NOSTEM SORTABLE user_id TAG SORTABLE last_login NUMERIC SORTABLE
-
-    FT.CREATE authors-idx ON HASH PREFIX 1 ru203:author:details: SCHEMA name TEXT SORTABLE author_id TAG SORTABLE
-
-    FT.CREATE authors-books-idx ON HASH PREFIX 1 ru203:author:books: SCHEMA book_isbn TAG SORTABLE author_id TAG SORTABLE
-
-    FT.CREATE checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: SCHEMA user_id TAG SORTABLE book_isbn TAG SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
-
-## You're Ready!
-
-Now, you're ready to take the course.
-
-If you aren't signed up yet, visit the [course signup page](https://university.redislabs.com/courses/ru203/) to register!
