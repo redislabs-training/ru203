@@ -29,7 +29,7 @@ This will launch a Redis instance with RediSearch installed. The instace will be
 
 ### 2. Load the sample data
 
-The commands that load the sample data are in the files `commands.redis`, which is part of this git repository. To load this data, run the following command:
+The commands that load the sample data are in the file `commands.redis`, which is part of this git repository. To load this data, run the following command:
 
 ```
 docker exec -i redis-search-2 redis-cli < commands.redis > output.txt
@@ -64,7 +64,7 @@ First, follow the instructions for building and running RediSearch from source](
 
 ### 2. Load the sample data
 
-The commands that load the sample data are in the files `commands.redis`, which is part of this git repository. To load this data, run the following command from your terminal:
+The commands that load the sample data are in the file `commands.redis`, which is part of this git repository. To load this data, run the following command from your terminal:
 
 ```
 redis-cli < commands.redis > output.txt
@@ -79,8 +79,7 @@ grep Invalid output.txt
 ```
 
 If you have any "Invalid" responses, you might not have RediSearch installed properly. If you have
-any problems, find us on [our Discord
-channel](https://discord.gg/wYQJsk5c4A).
+any problems, find us on [our Discord channel](https://discord.gg/wYQJsk5c4A).
 
 ### 3. Create the indexes
 
