@@ -23,7 +23,7 @@ First, make sure you have [Docker installed](https://docs.docker.com/get-docker/
 Next, run the following command from your terminal:
 
 ```
-docker run -it --rm --name redis-search-2 -p 6379:6379  redislabs/redisearch:2.0.5
+docker run -it --rm --name redis-search -p 6379:6379  redislabs/redisearch:2.0.5
 ```
 
 This will launch a Redis instance with RediSearch installed. The instace will be listening on the local post 6379.
@@ -33,7 +33,7 @@ This will launch a Redis instance with RediSearch installed. The instace will be
 The commands that load the sample data are in the file `commands.redis`, which is part of this git repository. To load this data, run the following command:
 
 ```
-docker exec -i redis-search-2 redis-cli < commands.redis > output.txt
+docker exec -i redis-search redis-cli < commands.redis > output.txt
 ```
 
 Check the "output" file for "Invalid" responses.
@@ -51,7 +51,7 @@ channel](https://discord.gg/wYQJsk5c4A).
 To create the indexes, first start the Redis CLI:
 
 ```
-docker exec -it redis-search-2 redis-cli
+docker exec -it redis-search redis-cli
 ```
 
 Then paste in the index creation commands (see the next section for details).
