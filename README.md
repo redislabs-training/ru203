@@ -26,7 +26,7 @@ Next, run the following command from your terminal:
 docker run -it --rm --name redis-search -p 6379:6379  redislabs/redisearch:2.0.5
 ```
 
-This will launch a Redis instance with RediSearch installed. The instace will be listening on the local post 6379.
+This will launch a Redis instance with RediSearch installed. The instance will be listening on the local post 6379.
 
 ### 2. Load the sample data
 
