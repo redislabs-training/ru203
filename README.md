@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository contains example data and setup instructions for the Redis University course [RU203: Querying, Indexing, and Full-Text Search with Redis](https://university.redislabs.com/courses/ru203/).
+This repository contains example data and setup instructions for the Redis University course [RU203: Querying, Indexing, and Full-Text Search with Redis](https://university.redis.com/courses/ru203/).
 
 To take this course, you'll first need do the following:
 
@@ -60,7 +60,7 @@ Then paste in the index creation commands (see the next section for details).
 
 ### 1. Build RediSearch and launch Redis
 
-First, follow the instructions for [building and running RediSearch from source](https://oss.redislabs.com/redisearch/Quick_Start/#building_and_running_from_source).
+First, follow the instructions for [building and running RediSearch from source](https://oss.redis.com/redisearch/Quick_Start/#building_and_running_from_source).
 
 
 ### 2. Load the sample data
@@ -117,7 +117,7 @@ Then run the following commands:
 
 Now, you're ready to take the course.
 
-If you aren't signed up yet, visit the [course signup page](https://university.redislabs.com/courses/ru203/) to register!
+If you aren't signed up yet, visit the [course signup page](https://university.redis.com/courses/ru203/) to register!
 
 ## Appendix: The Data Model
 
@@ -171,4 +171,4 @@ checkouts, and users. The following diagram represents this data model:
 
 ### Subscribe to our YouTube Channel
 
-We'd love for you to [check out our YouTube channel](https://youtube.com/redislabs), and subscribe if you want to see more Redis videos!
+We'd love for you to [check out our YouTube channel](https://youtube.com/redisinc), and subscribe if you want to see more Redis videos!
