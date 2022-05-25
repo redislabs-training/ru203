@@ -12,7 +12,7 @@ To take this course, you'll first need do the following:
 
 Need help getting started? Stop by the [Redis University Discord server](https://discord.gg/wYQJsk5c4A).
 
-To get RediSearch, we recommend either launching it from Docker (for beginners) or building it from source and running the locally (more advanced).
+To get RediSearch, we recommend either launching it from Docker (for beginners) or building it from source and running Redis locally (more advanced).
 
 ## Option 1: Run RediSearch locally with Docker (Best option for beginners)
 
