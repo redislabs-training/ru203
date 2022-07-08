@@ -23,10 +23,16 @@ First, make sure you have [Docker installed](https://docs.docker.com/get-docker/
 Next, run the following command from your terminal:
 
 ```
-docker run -it --rm --name redis-search -p 6379:6379  redislabs/redisearch:2.0.5
+docker-compose up -d
 ```
 
 This will launch a Redis instance with RediSearch installed. The instance will be listening on localhost port 6379.
+
+When you're done with this container, stop it like so:
+
+```
+docker-compose down
+```
 
 ### 2. Load the sample data
 
@@ -43,8 +49,7 @@ grep Invalid output.txt
 ```
 
 If you have any "Invalid" responses, you might not have RediSearch installed properly. If you have
-any problems, find us on [our Discord
-channel](https://discord.gg/wYQJsk5c4A).
+any problems, find us on [our Discord channel](https://discord.gg/wYQJsk5c4A).
 
 ### 3. Create the indexes
 
@@ -112,6 +117,19 @@ Then run the following commands:
     FT.CREATE authors-books-idx ON HASH PREFIX 1 ru203:author:books: SCHEMA book_isbn TAG SORTABLE author_id TAG SORTABLE
 
     FT.CREATE checkouts-idx ON HASH PREFIX 1 ru203:book:checkout: SCHEMA user_id TAG SORTABLE book_isbn TAG SORTABLE checkout_date NUMERIC SORTABLE return_date NUMERIC SORTABLE checkout_period_days NUMERIC SORTABLE geopoint GEO
+
+Now try a sample search query to find the authors of a book titled "You Can Draw Star Wars":
+
+    FT.SEARCH books-idx "@title:You Can Draw Star Wars" return 1 authors
+
+RediSearch should find one book, with "Bonnie Burton" as the author:
+
+```
+1) (integer) 1
+2) "ru203:book:details:9780756623432"
+3) 1) "authors"
+   2) "Bonnie Burton"
+```
 
 ## You're Ready!
 
