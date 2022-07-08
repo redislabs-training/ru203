@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  redis:
+    container_name: "redis-search"
+    image: "redislabs/redisearch:2.0.5"
+    ports:
+      - "6379:6379"
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: on-failure
