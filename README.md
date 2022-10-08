@@ -49,7 +49,7 @@ grep Invalid output.txt
 ```
 
 If you have any "Invalid" responses, you might not have RediSearch installed properly. If you have
-any problems, find us on [our Discord channel](https://discord.gg/wYQJsk5c4A).
+any problems, find us on [our Discord channel](https://discord.gg/SwGxdhrmmB).
 
 ### 3. Create the indexes
 
@@ -85,7 +85,7 @@ grep Invalid output.txt
 ```
 
 If you have any "Invalid" responses, you might not have RediSearch installed properly. If you have
-any problems, find us on [our Discord channel](https://discord.gg/wYQJsk5c4A).
+any problems, find us on [our Discord channel](https://discord.gg/SwGxdhrmmB).
 
 ### 3. Create the indexes
 
