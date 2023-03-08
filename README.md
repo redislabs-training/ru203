@@ -7,18 +7,18 @@ This repository contains example data and setup instructions for the Redis Unive
 To take this course, you'll first need do the following:
 
 1. Clone this git repository
-1. Get RediSearch and load the sample data
-1. Build the RediSearch indexes by running the index creation commands
+1. Get a [Redis Stack](https://redis.io/docs/stack/about/) database instance and load the sample data into it
+1. Build the search indexes by running the index creation commands provided
 
 Need help getting started? Stop by the [Redis University Discord server](https://discord.gg/wYQJsk5c4A).
 
-To get RediSearch, we recommend either launching it from Docker (for beginners) or building it from source and running Redis locally (more advanced).
+To get Redis Stack, we recommend either launching it from Docker or installing and running it locally using your operating system's package manager.
 
-## Option 1: Run RediSearch locally with Docker (Best option for beginners)
+## Option 1: Run Redis Stack locally with Docker (Best option for beginners)
 
 First, make sure you have [Docker installed](https://docs.docker.com/get-docker/).
 
-### 1. Start Redis
+### 1. Start Redis Stack
 
 Next, run the following command from your terminal:
 
@@ -26,7 +26,7 @@ Next, run the following command from your terminal:
 docker-compose up -d
 ```
 
-This will launch a Redis instance with RediSearch installed. The instance will be listening on localhost port 6379.
+This will launch a Redis Stack instance. The instance will be listening on localhost port 6379.
 
 When you're done with this container, stop it like so:
 
@@ -48,7 +48,7 @@ Check the "output" file for "Invalid" responses.
 grep Invalid output.txt
 ```
 
-If you have any "Invalid" responses, you might not have RediSearch installed properly. If you have
+If you have any "Invalid" responses, you might not have installed Redis Stack properly. If you have
 any problems, find us on [our Discord channel](https://discord.gg/SwGxdhrmmB).
 
 ### 3. Create the indexes
@@ -61,12 +61,15 @@ docker exec -it redis-search redis-cli
 
 Then paste in the index creation commands (see the next section for details).
 
-## Option 2: Build RediSearch from source
+## Option 2: Install Redis Stack Locally with a Package Manager
 
-### 1. Build RediSearch and launch Redis
+### 1. Install Redis Stack
 
-First, follow the instructions for [building and running RediSearch from source](https://oss.redis.com/redisearch/Quick_Start/#building_and_running_from_source).
+Follow the instructions for your operating system to install Redis Stack.  Choose the `redis-stack` package containing RedisInsight, don't use the `redis-stack-server` package.
 
+* [Instructions for macOS users](https://redis.io/docs/stack/get-started/install/mac-os/)
+* [Instructions for Linux users](https://redis.io/docs/stack/get-started/install/linux/)
+* [Instructions for Windows users](https://redis.io/docs/stack/get-started/install/windows/) -- requires Docker.
 
 ### 2. Load the sample data
 
@@ -84,7 +87,7 @@ Check the "output" file for "Invalid" responses.
 grep Invalid output.txt
 ```
 
-If you have any "Invalid" responses, you might not have RediSearch installed properly. If you have
+If you have any "Invalid" responses, you might not have Redis Stack installed properly. If you have
 any problems, find us on [our Discord channel](https://discord.gg/SwGxdhrmmB).
 
 ### 3. Create the indexes
@@ -122,7 +125,7 @@ Now try a sample search query to find the authors of a book titled "You Can Draw
 
     FT.SEARCH books-idx "@title:You Can Draw Star Wars" return 1 authors
 
-RediSearch should find one book, with "Bonnie Burton" as the author:
+Redis Stack should find one book, with "Bonnie Burton" as the author:
 
 ```
 1) (integer) 1
