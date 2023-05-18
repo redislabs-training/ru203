@@ -6,6 +6,10 @@ services:
     ports:
       - "6379:6379"
       - "8001:8001"
+    volumes:
+      - ./redisdata:/data
+    environment:
+      - REDIS_ARGS=--appendonly yes
     deploy:
       replicas: 1
       restart_policy:

@@ -34,6 +34,8 @@ When you're done with this container, stop it like so:
 docker-compose down
 ```
 
+Redis persists data to the `redisdata` folder as an append only file.  This is reloaded whenever you restart the container.
+
 ### 2. Load the sample data
 
 The commands that load the sample data are in the file `commands.redis`, which is part of this git repository. To load this data, run the following command:
