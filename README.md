@@ -136,6 +136,14 @@ Redis Stack should find one book, with "Bonnie Burton" as the author:
    2) "Bonnie Burton"
 ```
 
+## Optional (but Recommended): RedisInsight
+
+RedisInsight is a graphical tool for viewing data in Redis and managing Redis server instances.  You don't need to install it to be successful with this course, but we recommend it as a good way of viewing data stored in Redis.
+
+To use RedisInsight, you'll need to [download it](https://redis.io/docs/ui/insight/) then point it at your Redis instance.
+
+If you're using the Docker Compose file provided with the course to run Redis, you can access a web based version of RedisInsight without installing the desktop version.  Find it at `http://localhost:8001`.
+
 ## You're Ready!
 
 Now, you're ready to take the course.
