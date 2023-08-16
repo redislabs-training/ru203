@@ -2,7 +2,7 @@ version: "3.9"
 services:
   redis:
     container_name: "redis-search"
-    image: "redis/redis-stack"
+    image: "redis/redis-stack:latest"
     ports:
       - "6379:6379"
       - "8001:8001"
