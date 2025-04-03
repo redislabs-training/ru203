@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This repository contains example data and setup instructions for the Redis University learning path [RU203: Redis Query Engine](https://university.redis.io/learningpath/pdkbr7xdv3miym).
+This repository contains example data and setup instructions for the [Redis Query Engine](https://university.redis.io/learningpath/pdkbr7xdv3miym) learning path on [Redis University](https://university.redis.io/).
 
 To take this course, you'll first need do the following:
 
