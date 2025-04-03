@@ -1,8 +1,8 @@
-# RU203: Querying, Indexing, and Full-text Search with Redis
+# RU203: Redis Query Engine
 
 ## Introduction
 
-This repository contains example data and setup instructions for the Redis University course [RU203: Querying, Indexing, and Full-Text Search with Redis](https://university.redis.com/courses/ru203/).
+This repository contains example data and setup instructions for the Redis University learning path [RU203: Redis Query Engine](https://university.redis.io/learningpath/pdkbr7xdv3miym).
 
 To take this course, you'll first need do the following:
 
