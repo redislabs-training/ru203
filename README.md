@@ -1,4 +1,4 @@
-# RU203: Redis Query Engine
+# Redis University: Redis Query Engine
 
 ## Introduction
 
